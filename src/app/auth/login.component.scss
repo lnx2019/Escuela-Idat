@@ -1,0 +1,374 @@
+body, html {
+  height: 100%;
+  margin: 0;
+  font-family: "Poppins", "Segoe UI", sans-serif;
+  background-color: #0d1117;
+  overflow: hidden;
+}
+
+.login-wrapper {
+  display: flex;
+  height: 100vh;
+  background-image: url('/assets/fondo2.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  isolation: isolate;
+}
+
+/* DIFUMINADO CENTRAL HACIA LA DERECHA */
+.login-wrapper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(13, 17, 23, 0) 45%,   /* sin efecto desde el centro hacia la izquierda */
+    rgba(13, 17, 23, 0.4) 70%, /* empieza el difuminado */
+    rgba(13, 17, 23, 0.95) 100% /* termina oscuro a la derecha */
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* PANEL IZQUIERDO: IMAGEN LIMPIA SIN EFECTOS */
+.left-panel {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: fadeUp 1s ease-in-out;
+  overflow: hidden;
+}
+
+.text-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  transform: translateY(-25%); /* texto elevado */
+  animation: fadeUp 1s ease-in-out;
+}
+
+/* PANEL DERECHO: LOGIN SOBRE FONDO DIFUMINADO */
+.right-panel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* TARJETA GLASS */
+.glass-card {
+  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 90%;
+  max-width: 420px;
+  color: white;
+  animation: fadeInRight 0.9s ease-in-out;
+  position: relative;
+  z-index: 2;
+}
+
+/* CAMPOS DE LOGIN */
+.form-control {
+  color: white;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  transition: border-color 0.3s ease-in-out;
+}
+
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.form-control:focus {
+  border-color: #00d084;
+  box-shadow: none;
+}
+
+/* BOTÓN */
+.btn-success {
+  background-color: #00d084;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  background-color: #00a76f;
+  transform: scale(1.02);
+}
+
+/* ANIMACIONES */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(-25%); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* RESPONSIVIDAD */
+@media (max-width: 992px) {
+  .left-panel { display: none; }
+  .right-panel { flex: 1 1 100%; }
+}
+
+.text-shadow-lg {
+  text-shadow: 4px 4px 12px rgba(0, 0, 0, 0.7);
+}
+
+.text-shadow-md {
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+
+// body, html {
+//   height: 100%;
+//   margin: 0;
+//   font-family: "Poppins", "Segoe UI", sans-serif;
+//   background-color: #0d1117;
+//   overflow: hidden;
+// }
+
+// /* Fondo general para ambos lados */
+// .login-wrapper {
+//   display: flex;
+//   height: 100vh;
+//   background-image: url('/assets/fondo2.jpg');
+//   background-size: cover;
+//   background-position: center;
+//   background-repeat: no-repeat;
+//   position: relative;
+//   isolation: isolate; /* para que los overlays no se mezclen visualmente */
+// }
+
+// /* Overlay general tenue */
+// .login-wrapper::before {
+//   content: "";
+//   position: absolute;
+//   inset: 0;
+//   background: rgba(13, 17, 23, 0.5);
+//   z-index: 0;
+// }
+
+// /* ----------------------------- */
+// /* LADO IZQUIERDO: MÁS CLARO     */
+// /* ----------------------------- */
+// .left-panel {
+//   flex: 1;
+//   position: relative;
+//   z-index: 1;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   color: rgba(255, 255, 255, 0);
+//   animation: fadeUp 1s ease-in-out;
+//   overflow: hidden;
+// }
+
+// /* Capa de brillo independiente del lado izquierdo */
+// .left-panel::before {
+//   content: "";
+//   position: absolute;
+//   inset: 0;
+//   background: rgba(255, 255, 255, 0.25); /* controla la claridad */
+//   mix-blend-mode: lighten;
+//   z-index: 0;
+// }
+
+// /* Contenido textual */
+// .text-content {
+//   position: relative;
+//   z-index: 2;
+//   text-align: center;
+//   transform: translateY(-25%); /* sube el texto hacia la mitad superior */
+//   animation: fadeUp 1s ease-in-out;
+// }
+
+// /* ----------------------------- */
+// /* LADO DERECHO: MÁS OSCURO      */
+// /* ----------------------------- */
+// .right-panel {
+//   flex: 1;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   position: relative;
+//   z-index: 1;
+// }
+
+// /* Sombra suave en el lado derecho */
+// .right-panel::before {
+//   content: "";
+//   position: absolute;
+//   inset: 0;
+//   background: rgba(0, 0, 0, 0.4); /* controla la opacidad del lado derecho */
+//   z-index: 0;
+// }
+
+// /* TARJETA GLASS */
+// .glass-card {
+//   backdrop-filter: blur(14px);
+//   background: rgba(255, 255, 255, 0.1);
+//   border: 1px solid rgba(255, 255, 255, 0.2);
+//   width: 90%;
+//   max-width: 420px;
+//   color: white;
+//   animation: fadeInRight 0.9s ease-in-out;
+//   position: relative;
+//   z-index: 2;
+// }
+
+// .form-control {
+//   color: white;
+//   border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+//   transition: border-color 0.3s ease-in-out;
+// }
+
+// .form-control::placeholder {
+//   color: rgba(255, 255, 255, 0.6);
+// }
+
+// .form-control:focus {
+//   border-color: #00d084;
+//   box-shadow: none;
+// }
+
+// .btn-success {
+//   background-color: #00d084;
+//   border: none;
+//   transition: all 0.3s ease;
+// }
+
+// .btn-success:hover {
+//   background-color: #00a76f;
+//   transform: scale(1.02);
+// }
+
+// /* Animaciones */
+// @keyframes fadeUp {
+//   from { opacity: 0; transform: translateY(30px); }
+//   to { opacity: 1; transform: translateY(-25%); }
+// }
+
+// @keyframes fadeInRight {
+//   from { opacity: 0; transform: translateX(50px); }
+//   to { opacity: 1; transform: translateX(0); }
+// }
+
+// /* Responsividad */
+// @media (max-width: 992px) {
+//   .left-panel { display: none; }
+//   .right-panel { flex: 1 1 100%; }
+// }
+
+
+// body, html {
+//   height: 100%;
+//   margin: 0;
+//   font-family: "Poppins", "Segoe UI", sans-serif;
+//   background-color: #0d1117;
+//   overflow: hidden;
+// }
+
+// .login-wrapper {
+//   display: flex;
+// }
+
+// /* LADO IZQUIERDO */
+// .left-panel {
+//   flex: 1;
+//   background-image: url('/assets/fondo2.jpg');
+//   background-size: cover;
+//   background-position: center;
+//   position: relative;
+//   overflow: hidden;
+// }
+
+// .left-panel .overlay {
+//   position: absolute;
+//   inset: 0;
+//   background: linear-gradient(135deg, rgba(25, 135, 84, 0.75), rgba(13, 17, 23, 0.85));
+//   animation: gradientMove 8s ease-in-out infinite alternate;
+// }
+
+// .text-content {
+//   z-index: 2;
+//   animation: fadeUp 1s ease-in-out;
+// }
+
+// .right-panel {
+//   flex: 1;
+//   background: radial-gradient(circle at top left, #0f172a, #000);
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   overflow: hidden;
+// }
+
+// /* TARJETA GLASS */
+// .glass-card {
+//   backdrop-filter: blur(14px);
+//   background: rgba(255, 255, 255, 0.1);
+//   border: 1px solid rgba(255, 255, 255, 0.2);
+//   width: 90%;
+//   max-width: 420px;
+//   color: white;
+//   animation: fadeInRight 0.9s ease-in-out;
+// }
+
+// .form-control {
+//   color: white;
+//   border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+//   transition: border-color 0.3s ease-in-out;
+// }
+
+// .form-control::placeholder {
+//   color: rgba(255, 255, 255, 0.6);
+// }
+
+// .form-control:focus {
+//   border-color: #00d084;
+//   box-shadow: none;
+// }
+
+// .btn-success {
+//   background-color: #00d084;
+//   border: none;
+//   transition: all 0.3s ease;
+// }
+
+// .btn-success:hover {
+//   background-color: #00a76f;
+//   transform: scale(1.02);
+// }
+
+// /* Animaciones */
+// @keyframes fadeUp {
+//   from { opacity: 0; transform: translateY(30px); }
+//   to { opacity: 1; transform: translateY(0); }
+// }
+
+// @keyframes fadeInRight {
+//   from { opacity: 0; transform: translateX(50px); }
+//   to { opacity: 1; transform: translateX(0); }
+// }
+
+// @keyframes gradientMove {
+//   from { background-position: left; }
+//   to { background-position: right; }
+// }
+
+// /* Responsividad */
+// @media (max-width: 992px) {
+//   .left-panel { display: none; }
+//   .right-panel { flex: 1 1 100%; }
+// }

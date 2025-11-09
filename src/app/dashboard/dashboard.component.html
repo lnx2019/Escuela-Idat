@@ -1,0 +1,66 @@
+<!-- Header con menú de usuario mejorado -->
+<header class="bg-white shadow-sm py-2 px-4 d-flex justify-content-end align-items-center">
+  <div class="dropdown">
+    <button
+      class="btn btn-sm d-flex align-items-center gap-2"
+      type="button"
+      data-bs-toggle="dropdown"
+      aria-expanded="false"
+      style="color: #495057; font-weight: 500;"
+    >
+      <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+           style="width: 32px; height: 32px; font-size: 0.85rem;">
+        {{ usuarioNombreInicial || 'U' }}
+      </div>
+      <span>{{ usuarioNombre || 'Usuario' }}</span>
+      <i class="bi bi-chevron-down ms-1" style="font-size: 0.8rem; color: #6c757d;"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+      <li>
+        <h6 class="dropdown-header">Mi cuenta</h6>
+      </li>
+      <li>
+        <button class="dropdown-item text-danger d-flex align-items-center" (click)="logout()">
+          <i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión
+        </button>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<!-- Contenido original -->
+<div class="container mt-5">
+  <h2 class="text-center mb-4 fw-bold">Panel Principal de la Veterinaria 🏥</h2>
+
+  <div class="row g-4">
+    <!-- Tarjeta grande: Registro de Mascotas -->
+    <div class="col-md-4">
+      <div class="card card-principal shadow-lg border-0 rounded-4 h-100 text-center p-4">
+        <div class="card-body d-flex flex-column justify-content-center">
+          <div class="display-4 mb-3">🐾</div>
+          <h4 class="card-title fw-bold">Registro de Mascotas</h4>
+          <p class="card-text text-muted">
+            Registra nuevas mascotas y sus dueños en el sistema.
+          </p>
+          <a routerLink="/registrar-mascota" class="btn btn-success w-100 mt-3">Ingresar</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjetas secundarias -->
+    <div class="col-md-8">
+      <div class="row g-4">
+        <div class="col-md-6" *ngFor="let card of tarjetas">
+          <div class="card shadow border-0 rounded-4 h-100 text-center p-4">
+            <div class="card-body d-flex flex-column justify-content-center">
+              <div class="display-5 mb-2">{{ card.icono }}</div>
+              <h5 class="card-title fw-bold">{{ card.titulo }}</h5>
+              <p class="card-text text-muted">{{ card.descripcion }}</p>
+              <a [routerLink]="card.ruta" class="btn btn-outline-primary mt-2">Ingresar</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,87 @@
+/* Contenedor general */
+.container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+/* Tarjeta del formulario */
+.card {
+  background: #f9fefe; /* azul muy suave / blanco */
+  border-radius: 15px;
+  border: 1px solid #c2d1d9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+/* Títulos */
+.card h5 {
+  color: #1b4965; /* azul profundo profesional */
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Labels */
+.form-label {
+  font-weight: 500;
+  color: #1b4965;
+}
+
+/* Inputs, selects y textarea */
+.form-control, .form-select, textarea.form-control {
+  border: 1px solid #a8dadc;
+  border-radius: 8px;
+  background-color: #f1f7fa;
+  padding: 10px;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus, textarea.form-control:focus {
+  border-color: #457b9d;
+  box-shadow: 0 0 5px rgba(69, 123, 157, 0.3);
+  outline: none;
+}
+
+/* Botones */
+.btn-success {
+  background-color: #2a9d8f;
+  border: none;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.btn-success:hover {
+  background-color: #21867a;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border: none;
+}
+
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* Imagen y sección veterinario */
+.col-md-6.d-flex.align-items-center {
+  background-color: #e0f7fa; /* azul muy suave */
+  border-radius: 15px;
+  padding: 20px;
+}
+
+.col-md-6 img {
+  border: 5px solid #1b4965;
+}
+
+.col-md-6 h4 {
+  color: #1b4965;
+  font-weight: 600;
+}
+
+.col-md-6 p, .col-md-6 small {
+  color: #333;
+}

@@ -1,0 +1,136 @@
+<div class="container-fluid mt-4 d-flex justify-content-center">
+  <div class="w-90" style="max-width: 90%;"> <!-- Limite al 90% del ancho -->
+    <h2 class="text-center mb-4">📋 Historial de Citas Veterinarias</h2>
+
+    <!-- Filtro -->
+    <div class="mb-3 d-flex justify-content-end">
+      <input
+        type="text"
+        class="form-control w-50"
+        placeholder="Buscar por nombre de mascota"
+        [(ngModel)]="filtroMascota"
+        (input)="buscar()"
+      />
+    </div>
+
+    <!-- Spinner de carga -->
+    <div *ngIf="cargando" class="text-center my-3">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <!-- Card que contiene la tabla con scroll -->
+    <div class="card shadow-sm p-3">
+      <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+        <table class="table table-hover table-bordered align-middle mb-0 text-center" *ngIf="!cargando && consultas.length">
+          <thead class="table-dark">
+            <tr>
+              <th style="position: sticky; top: 0; background: #343a40; z-index: 1;">Nombre Mascota</th>
+              <th style="position: sticky; top: 0; background: #343a40; z-index: 1;">Propietario</th>
+              <th style="position: sticky; top: 0; background: #343a40; z-index: 1;">Fecha</th>
+              <th style="position: sticky; top: 0; background: #343a40; z-index: 1;">Hora</th>
+              <th style="position: sticky; top: 0; background: #343a40; z-index: 1;">Servicio</th>
+              <th style="position: sticky; top: 0; background: #343a40; z-index: 1;">Estado</th>
+              <th style="position: sticky; top: 0; background: #343a40; z-index: 1;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of consultas">
+              <td>{{ c.nombreMascota }}</td>
+              <td>{{ c.duenio || 'Sin dueño' }}</td>
+              <td>{{ c.fecha | date:'dd/MM/yyyy' }}</td>
+              <td>{{ c.hora }}</td>
+              <td>{{ c.servicio }}</td>
+              <td>
+                <span class="badge rounded-pill px-3 py-2" [class]="getEstadoClass(c.estado)">
+                  {{ c.estado | estadoCita }}
+                </span>
+              </td>
+                <!-- En la tabla, en la celda de acciones -->
+                <td>
+                  <button class="btn btn-sm btn-primary px-3 py-1 me-1" (click)="abrirModal(detalleModal, c)">
+                    Detalle
+                  </button>
+
+                  <!-- ✅ Solo se muestra si es administrador, de forma reactiva -->
+                  <ng-container *ngIf="esAdministrador$ | async">
+                    <button class="btn btn-sm btn-warning px-3 py-1 me-1" (click)="editarCita(c)">
+                      Editar
+                    </button>
+                    <button class="btn btn-sm btn-danger px-3 py-1" (click)="eliminarCita(c.id)">
+                      Eliminar
+                    </button>
+                  </ng-container>
+                </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p *ngIf="!cargando && !consultas.length" class="text-center text-muted mt-3">
+          No se encontraron registros.
+        </p>
+      </div>
+    </div>
+
+    <!-- Botón Regresar centrado -->
+    <div class="d-flex justify-content-center mt-4">
+      <button 
+        type="button" 
+        class="btn btn-primary px-5 py-2 rounded-5 shadow-sm fw-bold"
+        (click)="regresar()"
+      >
+        Regresar
+      </button>
+    </div>
+
+
+<!-- Modal Profesional -->
+<ng-template #detalleModal let-modal>
+  <div class="modal-header text-white" 
+       style="background: linear-gradient(90deg, #064e3b, #0f766e, #115e59);">
+    <h5 class="modal-title">📄 Detalle de la Cita</h5>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+
+  <div class="modal-body" *ngIf="citaSeleccionada">
+    <!-- Sección Mascota -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header text-white" 
+           style="background: linear-gradient(90deg, #064e3b, #0f766e, #115e59);">
+        🐾 Información de la Mascota
+      </div>
+      <div class="card-body">
+        <p><strong>Nombre:</strong> {{ citaSeleccionada.nombreMascota }}</p>
+      </div>
+    </div>
+
+    <!-- Sección Propietario -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header text-white" 
+           style="background: linear-gradient(90deg, #064e3b, #0f766e, #115e59);">
+        👤 Información del Propietario
+      </div>
+      <div class="card-body">
+        <p><strong>Nombre:</strong> {{ citaSeleccionada.duenio || 'Sin dueño' }}</p>
+        <p><strong>Teléfono:</strong> {{ citaSeleccionada.telefono || 'No especificado' }}</p>
+      </div>
+    </div>
+
+    <!-- Sección Cita -->
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header text-white" 
+           style="background: linear-gradient(90deg, #064e3b, #0f766e, #115e59);">
+        📅 Detalles de la Cita
+      </div>
+      <div class="card-body">
+        <p><strong>Fecha:</strong> {{ citaSeleccionada.fecha | date:'fullDate' }}</p>
+        <p><strong>Hora:</strong> {{ citaSeleccionada.hora }}</p>
+        <p><strong>Servicio:</strong> {{ citaSeleccionada.servicio }}</p>
+        <p><strong>Estado:</strong> {{ citaSeleccionada.estado | estadoCita }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.close()">Cerrar</button>
+  </div>
+</ng-template>

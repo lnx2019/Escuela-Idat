@@ -1,0 +1,31 @@
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.card-principal {
+  height: 100%;
+  min-height: 500px; // Tarjeta alta que ocupa 2 filas visualmente
+  background: linear-gradient(135deg, #4caf50, #2e7d32);
+  color: white;
+
+  .btn {
+    background: #fff;
+    color: #2e7d32;
+    font-weight: bold;
+  }
+
+  .btn:hover {
+    background: #e8f5e9;
+  }
+}
+
+h2 {
+  color: #2e7d32;
+  font-weight: 700;
+}

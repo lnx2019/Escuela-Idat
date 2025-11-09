@@ -1,0 +1,108 @@
+<div class="container py-5">
+  <div class="card shadow-lg p-4 rounded-4 bg-light">
+    <h2 class="text-success text-center mb-4 fw-bold">Registro de Mascota 🐾</h2>
+
+    <form [formGroup]="mascotaForm" (ngSubmit)="onSubmit()">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Nombre de la Mascota</label>
+          <input type="text" formControlName="nombreMascota" class="form-control" placeholder="Ej. Luna" />
+        </div>
+
+        <div class="col-md-3">
+          <label for="especie" class="form-label fw-semibold">Especie</label>
+          <select id="especie" formControlName="especie" class="form-select">
+            <option value="" disabled selected>Selecciona una especie</option>
+            <option value="Perro">Perro</option>
+            <option value="Gato">Gato</option>
+            <option value="Conejo">Conejo</option>
+            <option value="Hámster">Hámster</option>
+            <option value="Cuy">Cuy</option>
+            <option value="Tortuga">Tortuga</option>
+            <option value="Pez">Pez</option>
+            <option value="Ave">Ave</option>
+            <option value="Caballo">Caballo</option>
+            <option value="Burro">Burro</option>
+            <option value="Cabra">Cabra</option>
+            <option value="Cerdo">Cerdo</option>
+            <option value="Vaca">Vaca</option>
+            <option value="Oveja">Oveja</option>
+            <option value="Erizo">Erizo</option>
+          </select>
+        </div>
+
+      <div class="col-md-3">
+        <label for="raza" class="form-label fw-semibold">Raza</label>
+        <select id="raza" formControlName="raza" class="form-select">
+          <option value="" disabled selected>Selecciona una raza</option>
+          <option value="Labrador Retriever">Labrador Retriever</option>
+          <option value="Pastor Alemán">Pastor Alemán</option>
+          <option value="Bulldog Francés">Bulldog Francés</option>
+          <option value="Poodle (Caniche)">Poodle (Caniche)</option>
+          <option value="Golden Retriever">Golden Retriever</option>
+          <option value="Chihuahua">Chihuahua</option>
+          <option value="Beagle">Beagle</option>
+          <option value="Rottweiler">Rottweiler</option>
+          <option value="Schnauzer">Schnauzer</option>
+          <option value="Shih Tzu">Shih Tzu</option>
+          <option value="Husky Siberiano">Husky Siberiano</option>
+          <option value="Pug">Pug</option>
+          <option value="Dálmata">Dálmata</option>
+          <option value="Boxer">Boxer</option>
+          <option value="Border Collie">Border Collie</option>
+          <option value="Persa (gato)">Persa (gato)</option>
+          <option value="Siames (gato)">Siames (gato)</option>
+          <option value="Angora (gato)">Angora (gato)</option>
+          <option value="Maine Coon (gato)">Maine Coon (gato)</option>
+          <option value="Bengalí (gato)">Bengalí (gato)</option>
+          <option value="Ragdoll (gato)">Ragdoll (gato)</option>
+          <option value="Sphynx (gato)">Sphynx (gato)</option>
+          <option value="Pastor Australiano">Pastor Australiano</option>
+          <option value="Doberman">Doberman</option>
+          <option value="Sin raza definida (Mestizo)">Sin raza definida (Mestizo)</option>
+        </select>
+      </div>
+
+        <div class="col-md-2">
+          <label class="form-label fw-semibold">Edad</label>
+          <input type="number" formControlName="edad" class="form-control" placeholder="Años" />
+        </div>
+      </div>
+
+      <hr class="my-4" />
+
+      <h4 class="text-primary mb-3">Datos del Dueño</h4>
+      <div formGroupName="duenio" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Nombre</label>
+          <input type="text" formControlName="nombre" class="form-control" placeholder="Ej. Carlos Díaz" />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Teléfono</label>
+          <input type="text" formControlName="telefono" class="form-control" placeholder="999999999" />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Correo Electrónico</label>
+          <input type="email" formControlName="email" class="form-control" placeholder="correo@ejemplo.com" />
+        </div>
+      </div>
+
+       <div class="d-flex justify-content-between mt-4">
+        <button type="submit" class="btn btn-success px-5 py-2 rounded-5 shadow-sm fw-bold">
+          Registrar
+        </button>
+        <button type="submit" class="btn btn-primary px-5 py-2 rounded-5 shadow-sm fw-bold" (click)="regresar()">
+          Regresar
+        </button>
+      </div>
+    </form>
+
+    @if (registroExitoso) {
+      <div class="alert alert-success text-center mt-4 rounded-4 fw-semibold shadow-sm">
+        ¡Registro exitoso! La cita ha sido creada correctamente.
+      </div>
+    }
+  </div>
+</div>

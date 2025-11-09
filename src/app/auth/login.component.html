@@ -1,0 +1,75 @@
+<div class="login-wrapper d-flex vh-100">
+  <!-- PANEL IZQUIERDO -->
+  <div class="left-panel position-relative">
+    <div class="overlay"></div>
+    <div
+      class="text-content position-absolute top-50 start-50 translate-middle text-center text-light"
+    >
+      <img src="assets/logo1.svg" alt="Logo Velrob" width="100" class="mb-4 opacity-100" />
+      <div class="hero-text text-center position-relative">
+<div class="hero-text text-center position-relative">
+  <h1 class="fw-bold display-1 mb-3 text-white text-shadow-lg">
+    Clínica Veterinaria
+  </h1>
+  <p class="fw-bold display-5 text-white text-shadow-lg">
+    Tecnología y pasión por la vida animal.<br />
+    Transformamos el cuidado en innovación 🐾
+  </p>
+</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL DERECHO -->
+  <div class="right-panel d-flex align-items-center justify-content-center flex-grow-1">
+    <div class="glass-card p-5 rounded-4 shadow-lg" style="max-width: 420px; width: 100%;">
+      <h3 class="fw-bold mb-4 text-center text-white">INICIE SESION</h3>
+
+      <form (ngSubmit)="onLogin()" #loginForm="ngForm" novalidate>
+        <div class="form-group mb-4">
+          <input
+            id="usuario"
+            name="usuario"
+            [(ngModel)]="usuario"
+            required
+            type="text"
+            class="form-control bg-transparent border-0 border-bottom rounded-0 text-white ps-1"
+            placeholder="Usuario"
+          />
+        </div>
+
+        <div class="form-group mb-4">
+          <input
+            id="password"
+            name="password"
+            [(ngModel)]="password"
+            required
+            type="password"
+            class="form-control bg-transparent border-0 border-bottom rounded-0 text-white ps-1"
+            placeholder="Contraseña"
+          />
+        </div>
+
+        <button
+          type="submit"
+          [disabled]="!loginForm.valid"
+          class="btn btn-success w-100 py-2 fw-semibold rounded-5 shadow-sm"
+        >
+          <h5 class="mb-0 text-center" style="color: #000;">Ingresar</h5>
+        </button>
+      </form>
+
+      <!-- 🔻 Mensaje de error integrado -->
+      <div class="text-center mt-3" *ngIf="error">
+        <small class="text-danger fw-semibold">{{ error }}</small>
+      </div>
+
+      <div class="text-center mt-4">
+        <small class="text-white-50">
+          ¿Olvidaste tu contraseña?
+          <a href="#" class="text-primary text-decoration-none fw-semibold">Recupérala aquí</a>
+        </small>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,153 @@
+<div class="container mt-4">
+  <div class="row">
+    <!-- Formulario -->
+    <div class="col-md-6">
+      <div class="card p-4 border">
+        <h5 class="mb-4 text-center">Datos del Paciente</h5>
+
+        <form>
+          <!-- Selección de Mascota -->
+          <div class="mb-3">
+            <label>Mascota:</label>
+            <select
+              [(ngModel)]="nuevaCita.nombreMascota"
+              (ngModelChange)="onMascotaSeleccionada($event)"
+              name="nombreMascota"
+              class="form-select"
+            >
+              <option value="" disabled>Selecciona una mascota</option>
+              <option *ngFor="let m of mascotas" [value]="m.nombreMascota">
+                {{ m.nombreMascota }}
+                <!-- {{ m.nombreMascota }} ({{ m.duenio?.nombre || 'Sin dueño' }}) -->
+              </option>
+            </select>
+            </div>`
+
+            <!-- Propietario -->
+            <div class="mb-3">
+              <label for="propietario" class="form-label">Propietario:</label>
+              <input
+                type="text"
+                class="form-control"
+                id="propietario"
+                name="propietario"
+                [(ngModel)]="nuevaCita.duenio"
+                [readonly]="!esAdministrador"
+                placeholder="Propietario no asignado"
+              />
+            </div>
+
+            <!-- Teléfono -->
+            <div class="mb-3">
+              <label for="telefono" class="form-label">Teléfono:</label>
+              <input
+                type="tel"
+                class="form-control"
+                id="telefono"
+                name="telefono"
+                [(ngModel)]="nuevaCita.telefono"
+                [readonly]="!esAdministrador"
+                placeholder="Sin teléfono"
+              />
+            </div>
+            <!-- Fecha -->
+          <div class="mb-3">
+            <label for="fecha" class="form-label">Fecha:</label>
+            <input
+              type="date"
+              class="form-control"
+              id="fecha"
+              name="fecha"
+              [(ngModel)]="nuevaCita.fecha"
+              required
+            />
+          </div>
+
+          <!-- Hora -->
+          <div class="mb-3">
+            <label for="hora" class="form-label">Hora:</label>
+            <input
+              type="time"
+              class="form-control"
+              id="hora"
+              name="hora"
+              [(ngModel)]="nuevaCita.hora"
+              required
+            />
+          </div>
+
+            <!-- Servicio: ahora es un select -->
+            <div class="mb-3">
+              <label for="servicio" class="form-label">Servicio:</label>
+              <select
+                class="form-select"
+                id="servicio"
+                name="servicio"
+                [(ngModel)]="nuevaCita.servicio"
+                required
+              >
+                <option value="" disabled>Selecciona un servicio</option>
+                <option value="Consulta general">Consulta general</option>
+                <option value="Vacunación">Vacunación</option>
+                <option value="Desparasitación">Desparasitación</option>
+                <option value="Cirugía menor">Cirugía menor</option>
+                <option value="Cirugía mayor">Cirugía mayor</option>
+                <option value="Análisis de laboratorio">Análisis de laboratorio</option>
+                <option value="Rayos X">Rayos X</option>
+                <option value="Ecografía">Ecografía</option>
+                <option value="Hospitalización">Hospitalización</option>
+                <option value="Urgencias">Urgencias</option>
+              </select>
+            </div>
+
+            <!-- Estado -->
+            <div class="mb-3">
+              <label for="estado" class="form-label">Estado:</label>
+              <select
+                class="form-select"
+                id="estado"
+                name="estado"
+                [(ngModel)]="nuevaCita.estado"
+                required
+              >
+                <option *ngFor="let estado of estados" [value]="estado">
+                  {{ estado | titlecase }}
+                </option>
+              </select>
+            </div>
+          <!-- Botones -->
+          <div class="d-flex justify-content-between mt-4">
+            <button type="submit" class="btn btn-success px-5 py-2 rounded-5 shadow-sm fw-bold" (click)="guardarCita()">
+              {{ editando ? 'ACTUALIZAR CITA' : 'CREAR CITA' }}
+            </button>
+            <button type="submit" class="btn btn-primary px-5 py-2 rounded-5 shadow-sm fw-bold" (click)="regresar()">
+              REGRESAR
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Información del Veterinario -->
+    <div class="col-md-6 d-flex align-items-center">
+      <div class="text-center w-100">
+        <img
+          src="/assets/prof.jpg"
+          alt="Veterinario"
+          class="img-fluid rounded-circle mb-3"
+          style="max-width: 450px; height: auto;"
+        />
+          <div class="text-center mt-4">
+            <h2 class="fw-bold mb-2">Gestión de Citas</h2>
+
+            <h4 class="mb-1">{{ nombreUsuario }}</h4>
+            <h6 class="text-muted  fs-4 mb-2">Médico Veterinario</h6>
+
+            <p class="fst-italic text-secondary fs-5 mb-0">
+              “Comprometido con la salud y bienestar de tu mascota con amor y profesionalismo.”
+            </p>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>

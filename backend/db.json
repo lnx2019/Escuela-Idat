@@ -1,0 +1,273 @@
+{
+  "usuarios": [
+    {
+      "id": "1",
+      "usuario": "admin",
+      "nombre": "System Manger - Velrob",
+      "password": "1234",
+      "rol": "administrador"
+    },
+    {
+      "id": "2",
+      "usuario": "veterinario1",
+      "nombre": "Marco Aurelio",
+      "password": "1234",
+      "rol": "vendedor"
+    },
+    {
+      "id": "3",
+      "usuario": "veterinario2",
+      "nombre": "Maylin Perez",
+      "password": "1234",
+      "rol": "vendedor"
+    }
+  ],
+  "sesion": [
+    {
+      "id": 1,
+      "usuarioId": null,
+      "nombre": null,
+      "rol": null
+    }
+  ],
+  "mascotas": [
+    {
+      "id": 1,
+      "nombreMascota": "lupino",
+      "especie": "lobo",
+      "raza": "lobo",
+      "edad": 6,
+      "duenio": {
+        "nombre": "lobaton",
+        "telefono": "222333444",
+        "email": "francisco.leon.xavier@gmail.com"
+      }
+    },
+    {
+      "id": 2,
+      "nombreMascota": "21212121",
+      "especie": "21212121",
+      "raza": "21212121",
+      "edad": 22,
+      "duenio": {
+        "nombre": "121221",
+        "telefono": "211221212",
+        "email": "francisco.leon.xavier@gmail.com"
+      }
+    },
+    {
+      "id": 3,
+      "nombreMascota": "zorro",
+      "especie": "gato",
+      "raza": "naranjo",
+      "edad": 4,
+      "duenio": {
+        "nombre": "lupo",
+        "telefono": "333333333",
+        "email": "francisco.leon.xavier@gmail.com"
+      }
+    },
+    {
+      "id": 4,
+      "nombreMascota": "boster",
+      "especie": "perro",
+      "raza": "labrador",
+      "edad": 4,
+      "duenio": {
+        "nombre": "lucas",
+        "telefono": "444555444",
+        "email": "correo@correo.com"
+      }
+    },
+    {
+      "id": 5,
+      "nombreMascota": "zeus",
+      "especie": "Conejo",
+      "raza": "Rottweiler",
+      "edad": 4,
+      "duenio": {
+        "nombre": "pepe",
+        "telefono": "222222222",
+        "email": "francisco.leon.xavier@gmail.com"
+      }
+    },
+    {
+      "id": 6,
+      "nombreMascota": "pluto",
+      "especie": "Perro",
+      "raza": "Labrador Retriever",
+      "edad": 3,
+      "duenio": {
+        "nombre": "pancracio",
+        "telefono": "222111333",
+        "email": "pancracio@correo.com"
+      }
+    },
+    {
+      "id": 7,
+      "nombreMascota": "212121",
+      "especie": "Perro",
+      "raza": "Bulldog Francés",
+      "edad": 2,
+      "duenio": {
+        "nombre": "122112",
+        "telefono": "222222222",
+        "email": "francisco.leon.xavier@gmail.com"
+      }
+    },
+    {
+      "id": 8,
+      "nombreMascota": "Dombolby",
+      "especie": "Gato",
+      "raza": "Angora (gato)",
+      "edad": 3,
+      "duenio": {
+        "nombre": "Francisco",
+        "telefono": "999888555",
+        "email": "correo@correo.com"
+      }
+    },
+    {
+      "id": 9,
+      "nombreMascota": "Michi",
+      "especie": "Gato",
+      "raza": "Angora (gato)",
+      "edad": 4,
+      "duenio": {
+        "nombre": "Lucas",
+        "telefono": "444555666",
+        "email": "correo@correo.com"
+      }
+    },
+    {
+      "id": 10,
+      "nombreMascota": "michifus",
+      "especie": "Gato",
+      "raza": "Dálmata",
+      "edad": 5,
+      "duenio": {
+        "nombre": "Luisa",
+        "telefono": "999888777",
+        "email": "luisa@gmail.com"
+      }
+    },
+    {
+      "id": 11,
+      "nombreMascota": "lokito",
+      "especie": "Perro",
+      "raza": "Labrador Retriever",
+      "edad": 6,
+      "duenio": {
+        "nombre": "Frnak",
+        "telefono": "111222333",
+        "email": "franck@correo.com"
+      }
+    },
+    {
+      "id": 12,
+      "nombreMascota": "michifus",
+      "especie": "Gato",
+      "raza": "Sphynx (gato)",
+      "edad": 3,
+      "duenio": {
+        "nombre": "Manuel",
+        "telefono": "222333444",
+        "email": "manuel@gmail.com"
+      }
+    },
+    {
+      "id": 13,
+      "nombreMascota": "zorrino",
+      "especie": "Gato",
+      "raza": "Persa (gato)",
+      "edad": 4,
+      "duenio": {
+        "nombre": "jorge",
+        "telefono": "444555666",
+        "email": "jorge@gmail.com"
+      }
+    }
+  ],
+  "citas": [
+    {
+      "nombreMascota": "boster",
+      "duenio": "lucas",
+      "telefono": "444555444",
+      "fecha": "2025-11-11",
+      "hora": "19:22",
+      "servicio": "Desparasitación",
+      "estado": "confirmada",
+      "id": 20
+    },
+    {
+      "nombreMascota": "zorro",
+      "duenio": "lupo",
+      "telefono": "333333333",
+      "fecha": "2025-11-19",
+      "hora": "19:48",
+      "servicio": "Ecografía",
+      "estado": "confirmada",
+      "id": 23
+    },
+    {
+      "nombreMascota": "boster",
+      "duenio": "lucas",
+      "telefono": "444555444",
+      "fecha": "2025-11-20",
+      "hora": "19:54",
+      "servicio": "Hospitalización",
+      "estado": "completada",
+      "id": 24
+    },
+    {
+      "nombreMascota": "boster",
+      "duenio": "lucas",
+      "telefono": "444555444",
+      "fecha": "2025-11-28",
+      "hora": "23:50",
+      "servicio": "Rayos X",
+      "estado": "confirmada",
+      "id": 25
+    },
+    {
+      "nombreMascota": "lupino",
+      "duenio": "lobaton",
+      "telefono": "222333444",
+      "fecha": "2025-11-12",
+      "hora": "12:29",
+      "servicio": "Vacunación",
+      "estado": "confirmada",
+      "id": 27
+    },
+    {
+      "nombreMascota": "michifus",
+      "duenio": "Luisa torres",
+      "telefono": "999888777",
+      "fecha": "2025-11-20",
+      "hora": "14:16",
+      "servicio": "Cirugía menor",
+      "estado": "completada",
+      "id": 29
+    },
+    {
+      "nombreMascota": "lokito",
+      "duenio": "Frnak",
+      "telefono": "111222333",
+      "fecha": "2025-11-13",
+      "hora": "18:16",
+      "servicio": "Cirugía mayor",
+      "estado": "pendiente",
+      "id": 30
+    },
+    {
+      "nombreMascota": "michifus",
+      "duenio": "Luisa",
+      "telefono": "999888777",
+      "fecha": "2025-11-12",
+      "hora": "18:12",
+      "servicio": "Análisis de laboratorio",
+      "estado": "pendiente",
+      "id": 31
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+.card {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+input.ng-invalid.ng-touched {
+  border: 1px solid #dc3545;
+}
+
+input.ng-valid.ng-touched {
+  border: 1px solid #198754;
+}
