@@ -68,12 +68,18 @@ Cómo ejecutar el proyecto
 	1.	tener instalado Node.js y Angular CLI.
 	2.	terminal cd "carpeta del proyecto".
 	3.	Ejecuta:
-		npm install
-		npm install @ng-bootstrap/ng-bootstrap --legacy-peer-deps
+		git init
+		git remote add origin https://github.com/lnx2019/Escuela-Idat.git
+		git fetch --all
+		git checkout Interfaces3
+		git clone -b Interfaces3 https://github.com/lnx2019/Escuela-Idat.git
+		//install dependencias
+		npm install @angular/localize@20.3.9
+		npm install @ng-bootstrap/ng-bootstrap@19.0.1
+		//ejecutar en una terminal bash
 		cd backend
-		node server.js  // inicaliza el servidor con la database - db.json
-
-		luego ejecuta 
+		node server.js
+		//ejecutar en otra terminal bash
 		ng serve --open
 	4.	Se abrirá automáticamente tu navegador en: http://localhost:4200
 
