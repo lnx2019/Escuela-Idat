@@ -1,0 +1,93 @@
+<div class="reportes-container">
+  <h2>📊 Dashboard de Reportes</h2>
+
+  @if (loading) {
+    <div class="loading-message">
+      Cargando datos de reportes...
+    </div>
+  } @else {
+    <div class="grid-layout">
+      
+      <div class="report-card">
+        <h3>⭐ Cursos Más Populares</h3>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Curso</th>
+              <th>Inscripciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (curso of cursosPopulares; track curso.curso_id) {
+              <tr>
+                <td>{{ curso.curso_titulo }}</td>
+                <td class="text-center">{{ curso.total_inscripciones }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="2" class="text-center">
+                  No hay datos de inscripciones.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="report-card">
+        <h3>👥 Usuarios por Rol</h3>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Rol</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (rolData of usuariosPorRol; track rolData.rol) {
+              <tr>
+                <td>{{ rolData.rol | titlecase }}</td>
+                <td class="text-center">{{ rolData.total }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="2" class="text-center">
+                  No hay datos de usuarios.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="report-card full-width">
+        <h3>🧑‍🏫 Carga de Cursos por Instructor</h3>
+
+        <div class="scroll-limit">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Instructor</th>
+                <th>Cursos Asignados</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (instructor of instructoresYCursos; track instructor.instructor_id) {
+                <tr>
+                  <td>{{ instructor.instructor_nombre }}</td>
+                  <td class="text-center">{{ instructor.total_cursos_impartidos }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="2" class="text-center">
+                    No hay datos de instructores (o no tienen cursos asignados).
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</div>

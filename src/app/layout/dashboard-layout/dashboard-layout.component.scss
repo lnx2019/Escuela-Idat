@@ -1,0 +1,200 @@
+/* ======================= */
+/*  PALETA MILITAR GLOBAL  */
+/* ======================= */
+$militar-base: #3b4a3f;       /* Verde militar oscuro */
+$militar-oscuro: #2e3a32;     /* Verde profundo */
+$militar-luz: #4d5d52;        /* Verde claro apagado */
+
+$militar-suave: #4a4a42;          // tono metalizado
+$militar-borde: #2e2e28;          // borde metálico oscuro
+$militar-texto: #f1f1f1;          // blanco militar suave (no puro)
+
+
+/* ======================= */
+/*     SIDEBAR MILITAR     */
+/* ======================= */
+.sidebar-glass {
+    width: 260px;
+    color: #fff;
+    border: none;
+    position: relative;
+
+    background:
+      linear-gradient(
+        to bottom right,
+        $militar-base,
+        $militar-oscuro 65%
+      ),
+      repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.05),
+        rgba(255, 255, 255, 0.05) 8px,
+        rgba(0, 0, 0, 0.08) 8px,
+        rgba(0, 0, 0, 0.08) 16px
+      );
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    /* Sombras sutiles, sin luces verdes */
+    box-shadow:
+      inset 2px 0 8px rgba(0,0,0,0.4),
+      0 6px 18px rgba(0,0,0,0.45);
+
+    padding: 1.5rem;
+    transition: 0.3s ease;
+}
+
+/* ELIMINADO EL HALO VERDE */
+.sidebar-glass::after {
+    display: none;
+}
+
+
+/* ======================= */
+/*     NAV ITEMS MILITAR   */
+/* ======================= */
+
+.nav-pills .nav-link {
+    color: rgba(255,255,255,0.82);
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin: 6px 0;
+    transition: background 0.25s ease, transform 0.15s;
+}
+
+/* Hover sobrio, sin neón */
+.nav-pills .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.10);
+    color: #fff;
+    transform: translateX(4px);
+}
+
+/* ACTIVO — AHORA TÁCTICO Y APAGADO */
+.nav-pills .nav-link.active {
+    color: #fff;
+    font-weight: bold;
+
+    /* Verde militar apagado, sin brillo */
+    background: linear-gradient(
+      to right,
+      rgba(77,93,82,0.30),
+      rgba(46,58,50,0.15)
+    );
+
+    border: 1px solid rgba(255,255,255,0.15);
+
+    /* Sombras sin glow */
+    box-shadow:
+      inset 0 0 6px rgba(0,0,0,0.35),
+      0 0 4px rgba(0,0,0,0.4);
+}
+
+.nav-pills .nav-link.active:hover {
+    transform: translateX(6px);
+}
+
+/* ======================= */
+/*   TITULO ACERO GRUESO   */
+/* ======================= */
+.logo {
+  font-weight: 900;
+  letter-spacing: 2px;
+  font-size: 2rem;
+
+  background:
+    /* Capa 1: textura rugosa (igual que login) */
+    repeating-linear-gradient(
+      45deg,
+      rgba(40, 40, 40, 0.55) 0px,
+      rgba(40, 40, 40, 0.55) 2px,
+      rgba(15, 15, 15, 0.55) 4px,
+      rgba(15, 15, 15, 0.55) 6px
+    ),
+    /* Capa 2: grano disperso */
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(0,0,0,0.45) 0%,
+      rgba(0,0,0,0.05) 40%,
+      rgba(0,0,0,0.25) 80%
+    ),
+    /* Capa 3: acero militar oscuro */
+    linear-gradient(
+      135deg,
+      #3f3f3f 0%,
+      #2a2a2a 40%,
+      #474747 100%
+    );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  /* Relieve metálico, sin halo, sin glow */
+  text-shadow:
+    0px 1px 1px rgba(0,0,0,0.55),
+    0px 2px 2px rgba(0,0,0,0.45);
+}
+
+/* ================================ */
+/*  BOTÓN CERRAR SESIÓN - BLACK OPS */
+/* ================================ */
+
+.btn-logout {
+    background: #000;
+    color: #ffb300;
+    border: 1px solid rgba(255, 179, 0, 0.3);
+    font-weight: 600;
+
+    box-shadow:
+      0 0 6px rgba(0,0,0,0.4),
+      inset 0 0 6px rgba(255, 179, 0, 0.15);
+
+    transition: all 0.25s ease;
+}
+
+.btn-logout:hover {
+    background: #111;
+    color: #ffcf57;
+    border-color: rgba(255, 179, 0, 0.5);
+    box-shadow:
+      0 0 12px rgba(255, 179, 0, 0.45),
+      inset 0 0 8px rgba(255, 179, 0, 0.3);
+
+    transform: translateY(-1px);
+}
+
+.btn-logout:active {
+    background: #000;
+    color: #ffb300;
+    box-shadow: inset 0 0 6px rgba(255, 179, 0, 0.35);
+}
+
+
+/* === MAIN (contenido) === */
+main.d-flex {
+  background: linear-gradient(180deg, $militar-oscuro, $militar-suave);
+  color: $militar-texto;
+  flex-direction: column;
+  flex-grow: 1;
+  backdrop-filter: blur(1px);
+}
+
+/* === NAVBAR (MISMA TONALIDAD QUE LA SIDEBAR) === */
+header.navbar {
+  background: linear-gradient(90deg, $militar-oscuro, $militar-suave);
+  border-bottom: 2px solid $militar-borde;
+
+  h1,
+  span {
+    color: $militar-texto;
+  }
+}
+
+/* === CONTENEDOR DEL contenido (router-outlet container) === */
+.p-4 {
+  background: rgba(255, 255, 255, 0.04);     // ligero brillo como panel táctico
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  backdrop-filter: blur(2px);
+}

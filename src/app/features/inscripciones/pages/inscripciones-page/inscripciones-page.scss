@@ -1,0 +1,100 @@
+/* ===== PALETA MILITAR ===== */
+$militar-oscuro: #3a3a33;
+$militar-suave: #4a4a42;
+$militar-borde: #2e2e28;
+$militar-texto: #222222;
+$militar-texto-suave: rgba(255,255,255,0.85);
+$militar-panel: #f2f2f0;       // arena muy suave para fondos
+
+/* ===== CABECERA ===== */
+header {
+  background: linear-gradient(90deg, $militar-oscuro, $militar-suave);
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid $militar-borde;
+  color: #f1f1f1;
+
+  h2 {
+    margin: 0;
+  }
+
+  .btn-primary {
+    background-color: $militar-oscuro !important;
+    border-color: $militar-oscuro !important;
+
+    &:hover {
+      background-color: $militar-borde !important;
+      border-color: $militar-borde !important;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/* ===== TABLA MILITAR ===== */
+.table {
+  background: $militar-panel;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+
+  thead {
+    background: linear-gradient(180deg, $militar-oscuro, $militar-suave);
+    color: #e7e7e7;
+
+    th {
+      border-bottom: 2px solid $militar-borde;
+    }
+  }
+
+  tbody tr {
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(74, 74, 66, 0.15); // highlight oliva suave
+    }
+  }
+
+  td, th {
+    vertical-align: middle;
+  }
+}
+
+
+/* ============================ */
+/*         BADGES               */
+/* ============================ */
+.badge.bg-success {
+  background-color: #6b8f64 !important;   /* Activo */
+  color: #fff !important;
+}
+
+.badge.bg-secondary {
+  background-color: #6c757d55 !important; /* Completado */
+  color: #eee !important;
+}
+
+.badge.bg-danger {
+  background-color: #7a3b3b !important;   /* Cancelado */
+  color: #fff !important;
+}
+
+
+/* ============================ */
+/*   BOTONES DE ACCIÓN          */
+/* ============================ */
+.btn-danger.btn-sm {
+  background-color: #7a3b3b !important;
+  border: none !important;
+  color: #fff !important;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    background-color: #612e2e !important;
+    transform: translateY(-2px);
+  }
+}
+
+.text-end button {
+  min-width: 85px;
+  text-align: center;
+}

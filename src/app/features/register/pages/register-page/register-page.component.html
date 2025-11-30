@@ -1,0 +1,26 @@
+
+<div class="register-wrapper d-flex justify-content-center align-items-center">
+  <div class="register-card d-flex flex-column flex-lg-row shadow-lg">
+
+    <!-- LADO IZQUIERDO -->
+    <div class="register-left d-none d-lg-flex flex-column justify-content-center align-items-center p-4">
+      <h2 class="text-white fw-bold text-center mb-3">Bienvenido a IE RUNNERS</h2>
+      <p class="text-white-50 text-center">Tu aprendizaje empieza aquí. Únete y toma el control de tus cursos.</p>
+    </div>
+
+    <!-- LADO DERECHO -->
+    <div class="register-right p-5 d-flex flex-column justify-content-center">
+      <!-- <h3 class="fw-bold mb-4 text-center">Registro de Usuario</h3> -->
+
+      <app-register-form (register)="onRegister($event)"></app-register-form>
+
+      <p class="text-center mt-4">
+        ¿Ya tienes una cuenta?
+        <a routerLink="/login" class="fw-bold text-success text-decoration-none">
+          Inicia sesión
+        </a>
+      </p>
+    </div>
+
+  </div>
+</div>

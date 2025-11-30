@@ -1,0 +1,193 @@
+/* ======================= */
+/*  PALETA MILITAR GLOBAL  */
+/* ======================= */
+$militar-base: #3b4a3f;       /* Verde militar oscuro */
+$militar-oscuro: #2e3a32;     /* Verde profundo */
+$militar-luz: #4d5d52;        /* Verde claro atenuado */
+$arena: #c2b08c;              /* Arena cálida militar */
+$arena-oscura: #9e8967;       /* Arena oscura */
+
+/* ===================== */
+/*  LOGIN - FONDO ACERADO  */
+/* ===================== */
+
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* Fondo gris metálico acerado */
+  background:
+    /* Capa 1: texturizado diagonal tipo acero cepillado */
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.12) 0px,
+      rgba(255, 255, 255, 0.12) 2px,
+      rgba(0, 0, 0, 0.10) 4px,
+      rgba(0, 0, 0, 0.10) 6px
+    ),
+    /* Capa 2: brillo metálico difuso */
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(0,0,0,0.45) 0%,
+      rgba(0,0,0,0.12) 40%,
+      rgba(0,0,0,0.25) 80%
+    ),
+    /* Capa 3: acero oscuro puro */
+    linear-gradient(
+      135deg,
+      #424242 0%,   /* gris oscuro */
+      #2e2e2e 40%,  /* casi negro */
+      #3d3d3d 100%  /* acero tenue */
+    );
+
+  background-blend-mode: overlay, multiply, normal;
+  color: #ececec;
+
+  /* Sombra interior para un efecto metálico profundo */
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.7);
+}
+
+/* =========================================== */
+/*    LOGIN CARD – PLACA METÁLICA MILITAR      */
+/* =========================================== */
+
+.login-card-split {
+  width: 90%;
+  max-width: 950px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+
+  /* Fondo tipo placa metálica verde oscura */
+  background: 
+    /* Rayado metálico vertical */
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.04) 2px,
+      rgba(0, 0, 0, 0.08) 4px,
+      rgba(0, 0, 0, 0.08) 6px
+    ),
+    /* Mancha industrial para textura */
+    radial-gradient(
+      circle at 30% 40%,
+      rgba(0, 0, 0, 0.28) 0%,
+      rgba(0, 0, 0, 0.12) 30%,
+      rgba(0, 0, 0, 0.18) 60%,
+      rgba(0, 0, 0, 0.22) 100%
+    ),
+    /* Color base verde acero */
+    linear-gradient(
+      135deg,
+      #2c352e 0%,
+      #3f4b40 45%,
+      #2a332c 100%
+    );
+
+  background-blend-mode: overlay, multiply, normal;
+
+  /* Sombra tipo bloque de acero pesado */
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.45),
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    inset 0 0 20px rgba(0, 0, 0, 0.5);
+
+  /* Borde metálico verde opaco */
+  border: 2px solid rgba(90, 110, 90, 0.45);
+}
+
+/* Opcional: Marcos estilo placa reforzada */
+.login-card-split::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+
+  /* Bordes más oscuros para efecto 3D */
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+/* ======================= */
+/*   LADO IZQUIERDO MILITAR */
+/* ======================= */
+
+.panel-brand {
+  width: 45%;
+  color: white;
+  position: relative;
+
+  /* Degradado + tramado diagonal EXACTO del registro */
+  background: 
+    linear-gradient(
+      to bottom right,
+      $militar-base,
+      $militar-oscuro 65%
+    ),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.05) 8px,
+      rgba(0, 0, 0, 0.08) 8px,
+      rgba(0, 0, 0, 0.08) 16px
+    );
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+}
+
+/* Halo verde suave */
+.panel-brand::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(120, 255, 120, 0.10),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ========================= */
+/*   LADO DERECHO FORMULARIO */
+/* ========================= */
+
+.panel-form {
+  width: 55%;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  /* Fondo claro pero con ligera atenuación militar */
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f7f7f7 45%,
+    #eeeeee 100%
+  );
+
+  /* Sombra interna suave (premium) */
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.06);
+}
+
+/* Ajustes de responsividad */
+@media (max-width: 992px) {
+  .panel-brand {
+    display: none !important;
+  }
+  .panel-form {
+    width: 100%;
+  }
+}
+
+.login-link-lg {
+  font-size: 1.1rem;     // súbelo si lo quieres más grande (1.2rem, 1.3rem…)
+  font-weight: 500;       // opcional, da más presencia
+}

@@ -1,0 +1,105 @@
+<div class="dashboard-wrapper">
+
+  <!-- ====== TARJETAS PRINCIPALES ====== -->
+  <section class="cards-grid">
+    <div class="card-militar">
+      <h3>Usuarios</h3>
+      <p class="value">{{ metrics.usuariosTotales }}</p>
+      <span class="sub">Activos: {{ metrics.usuariosActivos }}</span>
+    </div>
+
+    <div class="card-militar">
+      <h3>Cursos</h3>
+      <p class="value">{{ metrics.cursosActivos }}</p>
+      <span class="sub">Inactivos: {{ metrics.cursosInactivos }}</span>
+    </div>
+
+    <div class="card-militar">
+      <h3>Estudiantes</h3>
+      <p class="value">{{ metrics.estudiantesTotales }}</p>
+      <span class="sub">Nuevos hoy: {{ metrics.estudiantesHoy }}</span>
+    </div>
+
+    <div class="card-militar">
+      <h3>Inscripciones Activas</h3>
+      <p class="value">{{ metrics.inscripcionesActivas }}</p>
+      <span class="sub">Canceladas: {{ metrics.inscripcionesCanceladas }}</span>
+    </div>
+  </section>
+
+  <!-- ====== ACCIONES RÁPIDAS ====== -->
+  <section class="quick-actions">
+    <button class="btn-militar" (click)="go('/usuarios/crear')">➕ Crear Usuario</button>
+    <button class="btn-militar" (click)="go('/cursos/crear')">➕ Crear Curso</button>
+    <button class="btn-militar" (click)="go('/inscripciones/crear')">➕ Nueva Inscripción</button>
+    <button class="btn-militar" (click)="go('/reportes')">📄 Ver Reporte</button>
+  </section>
+
+  <!-- ====== ÚLTIMOS MOVIMIENTOS ====== -->
+  <section class="last-activity">
+    <h3>Últimas Inscripciones</h3>
+    <ul>
+      <li *ngFor="let item of actividadReciente">
+        <span class="strong">{{ item.estudiante }}</span> se inscribió en 
+        <span class="strong">{{ item.curso }}</span>
+        <small>{{ datePipe.transform(item.fecha, 'short') }}</small>
+      </li>
+    </ul>
+  </section>
+
+</div>
+
+
+
+<!-- <div class="dashboard-container p-4">
+  <h1 class="mb-4">Panel de Administración</h1>
+
+  <section class="summary-cards row g-4">
+    @if (summaryCards$ | async; as cards) {
+      @for (card of cards; track card.title) {
+        <div class="col-xl-4 col-md-6 col-sm-12">
+          <div class="card shadow-sm h-100 {{ card.colorClass }}">
+            <div class="card-body">
+              <div class="d-flex align-items-center">
+                <div class="icon-circle me-3">
+                  {{ card.icon }}
+                </div>
+                <div>
+                  <h5 class="card-title text-uppercase text-muted mb-1">{{ card.title }}</h5>
+                  
+                  @if (card.loading) {
+                    <h3 class="card-text text-muted">Cargando...</h3>
+                  } @else if (card.error) {
+                    <h3 class="card-text text-danger">{{ card.count }}</h3>
+                  } @else {
+                    <h3 class="card-text">{{ card.count }}</h3>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </section>
+
+  <section class="mt-5">
+    <h2>Estadísticas Adicionales</h2>
+    <div class="alert alert-light">
+      Esta es la sección de contenido principal del dashboard.
+    </div>
+  </section>
+</div>
+
+<style>
+  .card-primary { border-left: 4px solid #007bff; }
+  .card-success { border-left: 4px solid #28a745; }
+  .card-body { padding: 1.5rem; }
+  .icon-circle {
+    font-size: 2rem;
+    padding: 0.5rem;
+    line-height: 1;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+</style> -->
