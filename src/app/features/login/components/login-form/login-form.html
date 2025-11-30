@@ -1,0 +1,61 @@
+<div class="login-page-wrapper">
+  <div class="login-card shadow-lg military-card">
+
+      <!-- CABECERA MILITAR -->
+      <div class="military-header text-center mb-4">
+          <h3 class="fw-bold text-white mb-1">INICIO DE SESIÓN</h3>
+          <small class="text-light opacity-75">Accede a tu cuenta</small>
+      </div>
+
+      <form (ngSubmit)="submit()" #loginForm="ngForm">
+
+          <div class="mb-3 input-group-icon">
+              <i class="bi bi-person input-icon"></i> 
+              <input
+                  type="text"
+                  class="form-control form-control-clean"
+                  id="username"
+                  name="username"
+                  [(ngModel)]="credentials.username"
+                  placeholder="Usuario o Correo Electrónico"
+                  required
+                  #username="ngModel"
+              />
+              @if (username.invalid && username.touched) {
+                  <div class="text-danger small mt-1">El usuario es obligatorio</div>
+              }
+          </div>
+
+          <div class="mb-4 input-group-icon">
+              <i class="bi bi-lock input-icon"></i>
+              <input
+                  type="password"
+                  class="form-control form-control-clean"
+                  id="password"
+                  name="password"
+                  [(ngModel)]="credentials.password"
+                  placeholder="Contraseña"
+                  required
+                  #password="ngModel"
+              />
+              @if (password.invalid && password.touched) {
+                  <div class="text-danger small mt-1">La contraseña es obligatoria</div>
+              }
+          </div>
+
+          <button
+              type="submit"
+              class="btn btn-military w-100 mb-3"
+              [disabled]="loginForm.invalid"
+          >
+              ACCEDER
+          </button>
+
+          <!-- <div class="d-flex justify-content-between small mt-2">
+              <a href="#" class="text-decoration-none text-secondary-emphasis">Olvidé mi contraseña</a>
+              <a routerLink="/register" class="text-decoration-none text-secondary-emphasis">Crear una cuenta</a>
+          </div> -->
+
+      </form>
+  </div>
+</div>

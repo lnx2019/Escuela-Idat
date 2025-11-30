@@ -1,0 +1,32 @@
+<h3>Registrar Nueva Inscripción</h3>
+
+<form [formGroup]="form" (ngSubmit)="guardar()" class="p-3 border rounded">
+
+  <div class="mb-3">
+    <label>Estudiante</label>
+    <select class="form-control" formControlName="estudiante_id">
+      <option [ngValue]="null">Seleccione...</option>
+      <option *ngFor="let e of estudiantes" [ngValue]="e.id">
+        {{ e.nombre }} ({{ e.email }})
+      </option>
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label>Curso</label>
+    <select class="form-control" formControlName="curso_id">
+      <option [ngValue]="null">Seleccione...</option>
+      <option *ngFor="let c of cursos" [ngValue]="c.id">
+        {{ c.titulo }}
+      </option>
+    </select>
+  </div>
+
+  <div class="form-actions mt-4 d-flex gap-2 align-items-center">
+  <button class="btn btn-primary" type="submit" [disabled]="form.invalid">
+    Guardar Inscripción
+  </button>
+  <app-cancel-button navigateTo="/inscripciones"></app-cancel-button>
+</div>
+
+</form>

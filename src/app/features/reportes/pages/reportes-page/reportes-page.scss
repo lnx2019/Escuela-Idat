@@ -1,0 +1,113 @@
+:host {
+  display: block;
+  // background: #0f150f; /* Verde militar oscuro */
+  // min-height: 100vh;
+  padding: 0px;
+  color: #e2e2e2;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Título general */
+.reportes-container h2 {
+  color: #c5d18a; /* verde oliva claro */
+  text-align: center;
+  margin-bottom: 25px;
+  text-shadow: 0 0 6px rgba(0,0,0,0.6);
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+/* Layout */
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+/* Tarjetas estilo militar */
+.report-card {
+  background: #1a241a; /* verde oscuro */
+  border: 2px solid #3a4b32; /* borde verde oliva */
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.4);
+  position: relative;
+}
+
+.report-card.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Encabezados de cada tarjeta */
+.report-card h3 {
+  color: #d0dd9d;
+  margin-bottom: 15px;
+  font-weight: 600;
+  border-bottom: 2px solid #4e5e41;
+  padding-bottom: 5px;
+  letter-spacing: 0.5px;
+}
+
+/* Estilo tabla militar */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.report-table thead {
+  background: #3d4a3a; /* verde oliva */
+}
+
+.report-table th {
+  padding: 8px;
+  text-align: left;
+  color: #f0f0f0;
+  font-weight: 600;
+  border-bottom: 1px solid #2e352c;
+}
+
+.report-table td {
+  padding: 7px;
+  border-bottom: 1px solid #263025;
+  color: #dcdcdc;
+}
+
+/* Hover estilo fuerza especial */
+.report-table tbody tr:hover {
+  background: #2a3a2a;
+  transition: 0.2s ease-in-out;
+}
+
+/* Centrado */
+.text-center {
+  text-align: center;
+}
+
+/* Mensaje de carga */
+.loading-message {
+  color: #c8d69b;
+  font-weight: 500;
+  text-align: center;
+}
+
+.scroll-limit {
+  max-height: 200px; /* altura ~5 filas */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4e5e41 #1a241a; /* colores militares */
+}
+
+/* Estilo militar para scroll en Chrome */
+.scroll-limit::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-limit::-webkit-scrollbar-track {
+  background: #1a241a;
+}
+
+.scroll-limit::-webkit-scrollbar-thumb {
+  background-color: #4e5e41;
+  border-radius: 4px;
+}

@@ -1,0 +1,33 @@
+<!-- src/app/features/estudiantes/pages/estudiantes-page/estudiantes-page.component.html -->
+<div class="container my-4">
+  <h2>Mis Estudiantes</h2>
+
+  @if (cargando) {
+    <div class="alert alert-info">Cargando estudiantes...</div>
+  } @else if (estudiantes.length === 0) {
+    <div class="alert alert-warning">No hay estudiantes registrados.</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Usuario</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of estudiantes; track e.id) {
+            <tr>
+              <td>{{ e.id }}</td>
+              <td>{{ e.nombre }}</td>
+              <td>{{ e.email }}</td>
+              <td>{{ e.username }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
