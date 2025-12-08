@@ -1,0 +1,81 @@
+/* Verde militar base */
+$militar-base: #3b4a3f;       /* Verde militar oscuro */
+$militar-oscuro: #2e3a32;     /* Tramado más profundo */
+$militar-luz: #4d5d52;        /* Atenuación luminosa suave */
+
+/* CABECERA ESTILO MILITAR */
+.card-header {
+  background: linear-gradient(
+      to bottom right,
+      $militar-base,
+      $militar-oscuro 60%
+    ),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.04),
+      rgba(255, 255, 255, 0.04) 6px,
+      rgba(0, 0, 0, 0.05) 6px,
+      rgba(0, 0, 0, 0.05) 12px
+    );
+
+  border-bottom: none !important;
+  position: relative;
+  border-radius: 12px;
+}
+
+/* LUZ VERDE SUAVE */
+.card-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(120, 255, 120, 0.12),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* BOTÓN MILITAR PREMIUM */
+.btn-success {
+  background-color: $militar-base !important;
+  border-color: $militar-base !important;
+  transition: 0.2s ease;
+
+  &:hover {
+    background-color: $militar-oscuro !important;
+    border-color: $militar-oscuro !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 100, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+}
+
+/* FORM INPUTS - estilo más limpio */
+.form-control,
+.form-select {
+  border-radius: 0.5rem;
+  border: 1px solid #d9d9d9;
+
+  &:focus {
+    border-color: $militar-base;
+    box-shadow: 0 0 0 0.2rem rgba(59, 74, 63, 0.25);
+  }
+}
+
+.card {
+  border: none !important;
+  box-shadow: none !important;
+  background: #f7f7f7; // opcional, puedes ajustarlo
+}
+
+// .card-header,
+// .card-body,
+// .card-footer {
+//   border: none !important;
+// }
+
