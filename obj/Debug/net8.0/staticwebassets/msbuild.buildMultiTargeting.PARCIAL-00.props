@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\PARCIAL-00.props" />
+</Project>
