@@ -1,0 +1,23 @@
+{
+  "Version": 1,
+  "Hash": "9+pLs76j5FrgZYi2IhEYL/4bMx+hUM46CdiukloGze0=",
+  "Source": "ApiWorkouts",
+  "BasePath": "_content/ApiWorkouts",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [
+    {
+      "Identity": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiIdentity\\ApiIdentity.csproj",
+      "Version": 2,
+      "Source": "ApiIdentity",
+      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework"
+    }
+  ],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
