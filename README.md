@@ -3,11 +3,11 @@
 API RESTful para gestión de gimnasio con 4 microservicios orquestados con .NET Aspire.
 
 ## Requisitos
-
+- ** dotnet --version - 8 o superior
+- ** dotnet workload install aspire
 - **.NET 8.0 SDK** - [Descargar](https://dotnet.microsoft.com/download/dotnet/8.0)
-- **SQL Server** (LocalDB, Express o Standard)
-- **Windows 10/11** o **Linux** con soporte para .NET
-
+- ** SQL Server** (LocalDB, Express o Standard)
+- ** Windows 10/11** o **Linux** con soporte para .NET
 ## Dependencias NuGet
 
 ### ApiIdentity
@@ -63,7 +63,7 @@ src/
 ```bash
 ``abrir directorio para desplegar el proyecto
 ``no inicializar con git init
-``ejecutar 
+``ejecutar tal cual el comando con el punto al final
 git clone -b EFINAL https://github.com/lnx2019/Escuela-Idat.git .
 
 # Restaurar todas las dependencias
@@ -82,6 +82,12 @@ dotnet run --project GimnacioCore
 - **ApiWorkouts**: Puerto dinámico
 
 > **Nota**: El dashboard requiere el token que aparece en la consola (ej: `https://localhost:17269/login?t=TOKEN`)
+`en el dashboard puedes encontrar los puertos asignados a cada servicio para las pruebas en postman`
+`si el dashboard demora en e inicializar puede ser por los certificadod`
+
+```si hay demoras en la ejecucion o carga del dashboard forzar validacion de certificados net
+en powershell ejecutar```
+dotnet dev-certs https --trust
 
 ## Puertos y Endpoints
 
