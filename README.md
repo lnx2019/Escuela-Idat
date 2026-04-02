@@ -52,6 +52,13 @@ API RESTful para gestión de gimnasio con 4 microservicios orquestados con .NET 
 ## Instalación de Paquetes
 
 ```bash
+`abrir directorio para desplegar el proyecto
+``no inicializar con git init
+``ejecutar 
+git clone -b EFINAL https://github.com/lnx2019/Escuela-Idat.git .
+
+```
+```bash
 # Restaurar todas las dependencias
 dotnet restore
 
@@ -73,10 +80,10 @@ src/
 ## Ejecución con Aspire (Recomendado)
 
 ```bash
-dotnet run --project src/GimnacioCore
-```
+cd GimnacioCore
+dotnet run --project GimnacioCore
 
-Esto inicia:
+```Esto inicia:
 - **Dashboard**: https://localhost:17269
 - **ApiIdentity**: Puerto dinámico
 - **ApiProfiles**: Puerto dinámico
