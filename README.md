@@ -48,24 +48,6 @@ API RESTful para gestión de gimnasio con 4 microservicios orquestados con .NET 
 ```xml
 <PackageReference Include="Aspire.Hosting.AppHost" Version="8.2.2" />
 ```
-
-## Instalación de Paquetes
-
-```bash
-`abrir directorio para desplegar el proyecto
-``no inicializar con git init
-``ejecutar 
-git clone -b EFINAL https://github.com/lnx2019/Escuela-Idat.git .
-
-```
-```bash
-# Restaurar todas las dependencias
-dotnet restore
-
-# Opcional: verificar dependencias instaladas
-dotnet list package
-```
-
 ## Estructura de Proyectos
 
 ```
@@ -76,11 +58,20 @@ src/
 ├── ApiBilling/       # Membresías y Pagos
 └── ApiWorkouts/     # Ejercicios y Rutinas
 ```
-
-## Ejecución con Aspire (Recomendado)
+## Instalación de Paquetes
 
 ```bash
+``abrir directorio para desplegar el proyecto
+``no inicializar con git init
+``ejecutar 
+git clone -b EFINAL https://github.com/lnx2019/Escuela-Idat.git .
+
+# Restaurar todas las dependencias
 cd GimnacioCore
+dotnet restore
+```
+## Ejecución con Aspire (Recomendado)
+```bash
 dotnet run --project GimnacioCore
 
 ```Esto inicia:
