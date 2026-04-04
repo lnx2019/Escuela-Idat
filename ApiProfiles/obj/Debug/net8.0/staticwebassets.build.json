@@ -1,13 +1,13 @@
 {
   "Version": 1,
-  "Hash": "cnotZgW7/Evk6xm4VWM4oWAjb6xTDBdbBma5RNr/BHQ=",
+  "Hash": "dC7VxDkYh1E9bqWEsw4FiQPqv38+vv5fwrM6Ti6d+m4=",
   "Source": "ApiProfiles",
   "BasePath": "_content/ApiProfiles",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [
     {
-      "Identity": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiBilling\\ApiBilling.csproj",
+      "Identity": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiBilling\\ApiBilling.csproj",
       "Version": 2,
       "Source": "ApiBilling",
       "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
@@ -18,7 +18,7 @@
       "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework"
     },
     {
-      "Identity": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiIdentity\\ApiIdentity.csproj",
+      "Identity": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiIdentity\\ApiIdentity.csproj",
       "Version": 2,
       "Source": "ApiIdentity",
       "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
@@ -29,7 +29,7 @@
       "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework"
     },
     {
-      "Identity": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiWorkouts\\ApiWorkouts.csproj",
+      "Identity": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiWorkouts\\ApiWorkouts.csproj",
       "Version": 2,
       "Source": "ApiWorkouts",
       "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",

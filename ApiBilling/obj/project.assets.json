@@ -2941,11 +2941,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiBilling\\ApiBilling.csproj",
+      "projectUniqueName": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiBilling\\ApiBilling.csproj",
       "projectName": "ApiBilling",
-      "projectPath": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiBilling\\ApiBilling.csproj",
+      "projectPath": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiBilling\\ApiBilling.csproj",
       "packagesPath": "C:\\Users\\LNX\\.nuget\\packages\\",
-      "outputPath": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiBilling\\obj\\",
+      "outputPath": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiBilling\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\LNX\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -2960,8 +2960,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiIdentity\\ApiIdentity.csproj": {
-              "projectPath": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiIdentity\\ApiIdentity.csproj"
+            "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiIdentity\\ApiIdentity.csproj": {
+              "projectPath": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiIdentity\\ApiIdentity.csproj"
             }
           }
         }

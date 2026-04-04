@@ -7,5 +7,5 @@ namespace Projects;
 [global::System.Diagnostics.DebuggerDisplay("Type = {GetType().Name,nq}, ProjectPath = {ProjectPath}")]
 public class ApiWorkouts : global::Aspire.Hosting.IProjectMetadata
 {
-    public string ProjectPath => """D:\00-2026-Opencode\GimnacioAPI\src\ApiWorkouts\ApiWorkouts.csproj""";
+    public string ProjectPath => """C:\Git\CICLO 5\BLOQUE 2\Examen Final 5to ciclo\ApiWorkouts\ApiWorkouts.csproj""";
 }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\00-2026-Opencode\\GimnacioAPI\\src\\GimnacioCore\\GimnacioCore.csproj": {}
+    "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\GimnacioCore\\GimnacioCore.csproj": {}
   },
   "projects": {
-    "D:\\00-2026-Opencode\\GimnacioAPI\\src\\GimnacioCore\\GimnacioCore.csproj": {
+    "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\GimnacioCore\\GimnacioCore.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\GimnacioCore\\GimnacioCore.csproj",
+        "projectUniqueName": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\GimnacioCore\\GimnacioCore.csproj",
         "projectName": "GimnacioCore",
-        "projectPath": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\GimnacioCore\\GimnacioCore.csproj",
+        "projectPath": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\GimnacioCore\\GimnacioCore.csproj",
         "packagesPath": "C:\\Users\\LNX\\.nuget\\packages\\",
-        "outputPath": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\GimnacioCore\\obj\\",
+        "outputPath": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\GimnacioCore\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\LNX\\AppData\\Roaming\\NuGet\\NuGet.Config"

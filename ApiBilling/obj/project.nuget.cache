@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "fRsW44e5ZSU=",
+  "dgSpecHash": "OT6cKl5mIvc=",
   "success": true,
-  "projectFilePath": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiBilling\\ApiBilling.csproj",
+  "projectFilePath": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiBilling\\ApiBilling.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\LNX\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\LNX\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",
