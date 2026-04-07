@@ -1,5 +1,4 @@
 using System;
-using ApiBilling.Models;
 
 namespace ApiProfiles.Models;
 
@@ -16,5 +15,4 @@ public class SocioMembresia
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public virtual Socios Socio { get; set; } = null!;
-    public virtual Membresias Membresia { get; set; } = null!;
 }

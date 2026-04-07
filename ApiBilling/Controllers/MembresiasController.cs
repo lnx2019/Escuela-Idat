@@ -83,12 +83,16 @@ public class SocioMembresiaController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("mi-membresia")]
+    [HttpGet("mi-membresia/{socioId}")]
     [Authorize(Roles = "SOCIO")]
-    public async Task<IActionResult> GetMyMembership()
+    public async Task<IActionResult> GetMyMembership(int socioId)
     {
-        var userId = int.Parse(User.Claims.First(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value);
-        return Ok(new List<object>());
+        var result = await _context.SocioMembresia.Include(sm => sm.Membresia)
+            .Where(sm => sm.SocioId == socioId)
+            .OrderByDescending(sm => sm.FechaInicio)
+            .Select(sm => new { sm.SocioMembresiaId, sm.MembresiaId, membresiaNombre = sm.Membresia.Nombre, sm.FechaInicio, sm.FechaFin, sm.Estado, sm.MontoPagado })
+            .ToListAsync();
+        return Ok(result);
     }
 
     [HttpPost]
