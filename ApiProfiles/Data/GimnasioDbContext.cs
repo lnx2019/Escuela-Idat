@@ -21,15 +21,17 @@ public class GimnasioDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // Tablas de ApiIdentity — solo lectura, no crear en migraciones
         modelBuilder.Entity<Users>(entity =>
         {
             entity.HasKey(e => e.UserId);
-            entity.HasIndex(e => e.UserName).IsUnique();
+            entity.ToTable("Users", tb => tb.ExcludeFromMigrations());
         });
 
         modelBuilder.Entity<Roles>(entity =>
         {
             entity.HasKey(e => e.RoleId);
+            entity.ToTable("Roles", tb => tb.ExcludeFromMigrations());
         });
 
         modelBuilder.Entity<UserRoles>(entity =>
@@ -37,6 +39,14 @@ public class GimnasioDbContext : DbContext
             entity.HasKey(e => new { e.UserId, e.RoleId });
             entity.HasOne(d => d.User).WithMany(p => p.UserRoles).HasForeignKey(d => d.UserId);
             entity.HasOne(d => d.Role).WithMany(p => p.UserRoles).HasForeignKey(d => d.RoleId);
+            entity.ToTable("UserRoles", tb => tb.ExcludeFromMigrations());
+        });
+
+        // Tabla de ApiWorkouts — solo lectura, no crear en migraciones
+        modelBuilder.Entity<ApiWorkouts.Models.Ejercicios>(entity =>
+        {
+            entity.HasKey(e => e.EjercicioId);
+            entity.ToTable("Ejercicios", tb => tb.ExcludeFromMigrations());
         });
 
         modelBuilder.Entity<Socios>(entity =>
@@ -54,8 +64,8 @@ public class GimnasioDbContext : DbContext
         modelBuilder.Entity<SocioEntrenador>(entity =>
         {
             entity.HasKey(e => new { e.SocioId, e.EntrenadorId });
-            entity.HasOne(d => d.Socio).WithMany(p => p.SocioEntrenador).HasForeignKey(d => d.SocioId);
-            entity.HasOne(d => d.Entrenador).WithMany(p => p.SocioEntrenador).HasForeignKey(d => d.EntrenadorId);
+            entity.HasOne(d => d.Socio).WithMany(p => p.SocioEntrenador).HasForeignKey(d => d.SocioId).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(d => d.Entrenador).WithMany(p => p.SocioEntrenador).HasForeignKey(d => d.EntrenadorId).OnDelete(DeleteBehavior.NoAction);
         });
 
         modelBuilder.Entity<Asistencias>(entity =>

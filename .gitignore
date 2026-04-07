@@ -2,6 +2,10 @@
 obj/
 bin/
 
+# Local config
+**/appsettings.json
+**/appsettings.*.json
+
 # NuGet
 *.user
 *.suo
