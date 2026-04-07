@@ -1,0 +1,20 @@
+# Build outputs
+obj/
+bin/
+
+# NuGet
+*.user
+*.suo
+.nuget/
+packages/
+
+# Visual Studio
+.vs/
+*.rsuser
+
+# Rider
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
