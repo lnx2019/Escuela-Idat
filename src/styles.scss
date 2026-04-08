@@ -1,0 +1,13 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* -------------------------------------
+ * 1. VARIABLES GLOBALES (:ROOT)
+ * ------------------------------------- */
+:root {
+  --color-institucional: #1C644E; /* Verde Bosque Oscuro */
+  --color-institucional-claro: #298c6d; /* Un verde más claro para degradado */
+  --color-fondo-claro: #f8f9fa; /* Gris muy claro para el fondo general */
+  --color-border-glass: rgba(255, 255, 255, 0.18); /* Borde blanco translúcido */
+  --color-shadow-glass: rgba(0, 0, 0, 0.1); /* Sombra sutil */
+ 
+}

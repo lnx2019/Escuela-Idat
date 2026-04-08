@@ -1,0 +1,29 @@
+<div class="login-wrapper d-flex justify-content-center align-items-center">
+  <div class="login-card-split d-flex flex-column flex-lg-row shadow-lg">
+    
+    <!-- LADO IZQUIERDO (Branding/Imagen) -->
+    <div class="panel-brand d-none d-lg-flex flex-column justify-content-center align-items-center p-4">
+      <h2 class="text-white fw-bold text-center mb-3">Bienvenido a IE RUNNERS</h2>
+      <p class="text-white-50 text-center">Tu aprendizaje empieza aquí. Inicia sesión para continuar.</p>
+    </div>
+    
+    <!-- LADO DERECHO (Formulario) -->
+    <div class="panel-form p-5 d-flex flex-column justify-content-center">
+      <app-login-form (login)="onLogin($event)" #loginForm></app-login-form>
+
+          <div class="d-flex justify-content-between small mt-2">
+            <a href="#" 
+              class="text-decoration-none text-secondary-emphasis login-link-lg">
+              Olvidé mi contraseña
+            </a>
+
+            <a routerLink="/register" 
+              class="tfw-blod text-success text-decoration-none login-link-lg">
+              Crear una cuenta
+            </a>
+          </div>
+      <p class="text-center text-muted small mt-4"> &copy; 2025 Academia Digital </p> 
+    </div>
+
+  </div>
+</div>

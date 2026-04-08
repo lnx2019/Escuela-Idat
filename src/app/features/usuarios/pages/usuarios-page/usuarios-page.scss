@@ -1,0 +1,117 @@
+/* ===== PALETA MILITAR ARENA–OLIVA ===== */
+$militar-oscuro: #3a3a33;      // base oliva apagada
+$militar-suave: #4a4a42;       // metalizado oliva
+$militar-borde: #2e2e28;       // borde oscuro táctico
+$militar-panel: #f2f2f0;       // arena muy suave para fondos
+$militar-texto: #222;          // gris oscuro legible
+
+/* ===== CONTENEDOR GENERAL ===== */
+.usuarios-list-container {
+  background: transparent;     // Se funde con el fondo
+  border: none;                // Sin líneas
+  border-radius: 0;            // Sin esquinas marcadas
+  padding: 2rem;
+  color: $militar-texto;       // Mantiene el color de texto militar
+  box-shadow: none;            // Sin sombras ni efectos
+}
+
+/* ===== CABECERA ===== */
+header {
+  background: linear-gradient(90deg, $militar-oscuro, $militar-suave);
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid $militar-borde;
+  color: #f1f1f1;
+
+  h2 {
+    margin: 0;
+  }
+
+  .btn-primary {
+    background-color: $militar-oscuro !important;
+    border-color: $militar-oscuro !important;
+
+    &:hover {
+      background-color: $militar-borde !important;
+      border-color: $militar-borde !important;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/* ===== TABLA MILITAR ===== */
+.table {
+  background: $militar-panel;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+
+  thead {
+    background: linear-gradient(180deg, $militar-oscuro, $militar-suave);
+    color: #e7e7e7;
+
+    th {
+      border-bottom: 2px solid $militar-borde;
+    }
+  }
+
+  tbody tr {
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(74, 74, 66, 0.15); // highlight oliva suave
+    }
+  }
+
+  td, th {
+    vertical-align: middle;
+  }
+}
+
+/* ===== BADGES (activo / inactivo) ===== */
+.badge.bg-success {
+  background-color: #50644d !important; // verde oliva apagado
+}
+
+.badge.bg-danger {
+  background-color: #7b3f3f !important; // rojo militar oscuro
+}
+
+/* ===== BOTONES DE ACCIONES ===== */
+.btn-info {
+  background-color: #4a5850 !important; // oliva metalizado
+  border-color: #4a5850 !important;
+  color: #fff;
+
+  &:hover {
+    background-color: $militar-oscuro !important;
+    border-color: $militar-oscuro !important;
+  }
+}
+
+.btn-danger {
+  background-color: #6b2f2f !important; // rojo apagado militar
+  border-color: #6b2f2f !important;
+
+  &:hover {
+    background-color: #5a2626 !important;
+    border-color: #5a2626 !important;
+  }
+}
+
+/* ===== PAGINACIÓN ===== */
+.pagination .page-link {
+  background-color: $militar-panel;
+  border: 1px solid $militar-borde;
+  color: $militar-texto;
+
+  &:hover {
+    background-color: rgba(74, 74, 66, 0.2);
+  }
+}
+
+.page-item.active .page-link {
+  background-color: $militar-oscuro;
+  border-color: $militar-oscuro;
+  color: #fff;
+}

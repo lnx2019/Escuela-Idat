@@ -1,0 +1,123 @@
+/* ===== PALETA MILITAR ARENA–OLIVA ===== */
+$militar-oscuro: #3a3a33;      
+$militar-suave: #4a4a42;       
+$militar-borde: #2e2e28;       
+$militar-panel: #f2f2f0;       
+$militar-texto: #222222;       
+$militar-texto-suave: rgba(255,255,255,0.85);
+
+
+
+/* CONTENEDOR PRINCIPAL */
+.Catálogo-container {
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;     
+  overflow-x: hidden;
+  padding: 2rem;
+}
+
+/* Scroll bonito (opcional) */
+.Catálogo-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.Catálogo-container::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+
+/* ===== CABECERA MILITAR ===== */
+.Catálogo-container > header {
+  background: linear-gradient(90deg, $militar-oscuro, $militar-suave);
+  padding: 1rem 1.0rem;
+  border-radius: 6px;
+  border: 1px solid $militar-borde;
+  color: #e6e6e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.Catálogo-container, 
+.p-4 {
+  height: 25%;
+  max-height: 50%;
+  overflow: hidden;   // evita que el contenido empuje hacia afuera
+}
+
+.cards-wrapper {
+  height: 65vh;    // antes max-height
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.cards-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cards-wrapper::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+
+.catalogo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.curso-item {
+  width: 100%;
+  min-width: 0;
+}
+
+.catalogo-scroll {
+  height: 100%;
+  max-height: calc(100vh - 160px); /* ajusta si tu header es más alto */
+  overflow-y: auto;
+  padding-right: 8px; /* evita que el scroll tape contenido */
+}
+
+.catalogo-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.catalogo-scroll::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+/* ============================== */
+/*    BOTONES DE ACCIÓN MILITAR   */
+/* ============================== */
+
+.btn-info {
+  background-color: #55665a !important;  // oliva metal oscuro
+  border-color: #55665a !important;
+  color: #fff !important;
+
+  &:hover {
+    background-color: #3f4c44 !important;
+    border-color: #3f4c44 !important;
+  }
+}
+
+.btn-danger {
+  background-color: #7b3f3f !important;  // rojo militar apagado
+  border-color: #7b3f3f !important;
+
+  &:hover {
+    background-color: #5d2e2e !important;
+    border-color: #5d2e2e !important;
+  }
+}
+

@@ -1,0 +1,17 @@
+/* Estilos básicos para el botón secundario (siguiendo Bootstrap) */
+.btn-secondary {
+  // Colores base
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+
+  // Transición suave para el hover
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+    // Efecto sutil para el hover
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  }
+}
