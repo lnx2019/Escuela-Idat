@@ -73,6 +73,7 @@ dotnet workload restore
 ```
 ## Ejecución con Aspire (Recomendado)
 ```bash
+cd.. 'retornar al directorio raiz'
 dotnet run --project GimnacioCore
 
 ```Esto inicia:
