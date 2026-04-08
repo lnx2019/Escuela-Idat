@@ -1,0 +1,50 @@
+<div class="dashboard-wrapper">
+
+  <!-- ====== TARJETAS PRINCIPALES ====== -->
+  <section class="cards-grid">
+    <div class="card-militar">
+      <h3>Usuarios</h3>
+      <p class="value">{{ metrics.usuariosTotales }}</p>
+      <span class="sub">Activos: {{ metrics.usuariosActivos }}</span>
+    </div>
+
+    <div class="card-militar">
+      <h3>Cursos</h3>
+      <p class="value">{{ metrics.cursosActivos }}</p>
+      <span class="sub">Inactivos: {{ metrics.cursosInactivos }}</span>
+    </div>
+
+    <div class="card-militar">
+      <h3>Estudiantes</h3>
+      <p class="value">{{ metrics.estudiantesTotales }}</p>
+      <span class="sub">Nuevos hoy: {{ metrics.estudiantesHoy }}</span>
+    </div>
+
+    <div class="card-militar">
+      <h3>Inscripciones Activas</h3>
+      <p class="value">{{ metrics.inscripcionesActivas }}</p>
+      <span class="sub">Canceladas: {{ metrics.inscripcionesCanceladas }}</span>
+    </div>
+  </section>
+
+  <!-- ====== ACCIONES RÁPIDAS ====== -->
+  <section class="quick-actions">
+    <button class="btn-militar" *appShowForRole="'administrador'" (click)="go('/usuarios/crear')">➕ Crear Usuario</button>
+    <button class="btn-militar" *appShowForRole= "['administrador', 'instructor']" (click)="go('/cursos/crear')">➕ Crear Curso</button>
+    <button class="btn-militar" *appShowForRole= "['administrador', 'instructor']" (click)="go('/inscripciones/crear')">➕ Nueva Inscripción</button>
+    <button class="btn-militar" *appShowForRole= "['administrador', 'instructor']" (click)="go('/reportes')">📄 Ver Reporte</button>
+  </section>
+
+  <!-- ====== ÚLTIMOS MOVIMIENTOS ====== -->
+  <section class="last-activity">
+    <h3>Últimas Inscripciones</h3>
+    <ul>
+      <li *ngFor="let item of actividadReciente">
+        <span class="strong">{{ item.estudiante }}</span> se inscribió en 
+        <span class="strong">{{ item.curso }}</span>
+        <small>{{ datePipe.transform(item.fecha, 'short') }}</small>
+      </li>
+    </ul>
+  </section>
+
+</div>

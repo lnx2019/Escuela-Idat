@@ -1,0 +1,84 @@
+<div class="d-flex justify-content-center align-items-center bg-light p-0">
+  <div class="card shadow-lg border-0 rounded-4" style="max-width: 420px; width: 100%;">
+    
+    <div class="card-header text-white text-center py-3 rounded-top-4">
+      <h4 class="mb-0 fw-bold">Crear cuenta</h4>
+      <small class="opacity-75">Ingresa tus datos para continuar</small>
+    </div>
+
+    <div class="card-body p-4">
+      <form (ngSubmit)="submit()" #form="ngForm">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Nombre completo</label>
+          <input 
+            name="nombre"
+            [(ngModel)]="credentials.nombre"
+            class="form-control"
+            placeholder="Ej: Juan Pérez"
+            required
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Usuario</label>
+          <input 
+            name="username"
+            [(ngModel)]="credentials.username"
+            class="form-control"
+            placeholder="Ej: jperez23"
+            required
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Correo electrónico</label>
+          <input 
+            name="email"
+            [(ngModel)]="credentials.email"
+            type="email"
+            class="form-control"
+            placeholder="correo@example.com"
+            required
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Contraseña</label>
+          <input 
+            name="password"
+            [(ngModel)]="credentials.password"
+            type="password"
+            class="form-control"
+            placeholder="••••••••"
+            required
+          >
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Rol de usuario</label>
+          <select 
+            name="rol"
+            [(ngModel)]="credentials.rol"
+            class="form-select"
+            required
+          >
+            <option value="" disabled selected>Selecciona tu rol</option>
+            <option value="estudiante">Estudiante</option>
+            <option value="instructor">Instructor</option>
+          </select>
+        </div>
+
+        <button 
+          type="submit"
+          class="btn btn-success w-100 py-2 fw-semibold"
+          [disabled]="form.invalid"
+        >
+          Registrarse
+        </button>
+
+      </form>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,16 @@
+{
+  "name": "api-server-mysql",
+  "version": "1.0.0",
+  "description": "Servidor de API RESTful con Express y MySQL",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "mysql2": "^3.6.1"
+  }
+}

@@ -1,0 +1,67 @@
+<form [formGroup]="cursoForm" (ngSubmit)="guardarCurso()" class="p-4 border rounded shadow-sm">
+
+  <div class="mb-3">
+    <label for="titulo" class="form-label">Título del Curso</label>
+    <input type="text" id="titulo" formControlName="titulo" class="form-control" placeholder="Ej: Desarrollo Web con Angular">
+    </div>
+
+  <div class="mb-3">
+    <label for="descripcion" class="form-label">Descripción</label>
+    <textarea id="descripcion" formControlName="descripcion" class="form-control" rows="3" placeholder="Descripción breve del contenido del curso."></textarea>
+    </div>
+
+<div class="form-group">
+  <label for="instructor_id">Instructor</label>
+  
+  <select 
+    id="instructor_id" 
+    formControlName="instructor_id" 
+    class="form-control"
+    [disabled]="cargandoInstructores || instructores.length === 0"
+  >
+    <option [ngValue]="null" disabled>
+      -- {{ cargandoInstructores ? 'Cargando...' : 'Seleccione un Instructor' }} --
+    </option>
+    
+    <option *ngFor="let instructor of instructores" [ngValue]="instructor.id">
+      {{ instructor.nombre }} ({{ instructor.email }})
+    </option>
+  </select>
+
+  <div *ngIf="cursoForm.get('instructor_id')?.invalid && cursoForm.get('instructor_id')?.touched" class="text-danger">
+    Se requiere seleccionar un instructor válido.
+  </div>
+</div>    
+
+  <div class="mb-3">
+    <label for="duracion_horas" class="form-label">Duración (en horas)</label>
+    <input type="number" id="duracion_horas" formControlName="duracion_horas" class="form-control" placeholder="Ej: 40">
+    @if (cursoForm.get('duracion_horas')?.invalid && cursoForm.get('duracion_horas')?.touched) {
+      <div class="text-danger small mt-1">
+        @if (cursoForm.get('duracion_horas')?.errors?.['required']) {
+          La duración es obligatoria.
+        }
+        @else if (cursoForm.get('duracion_horas')?.errors?.['min']) {
+          La duración debe ser positiva.
+        }
+      </div>
+    }
+  </div>
+
+  <div class="form-check mb-4">
+    <input class="form-check-input" type="checkbox" id="activo" formControlName="activo">
+    <label class="form-check-label" for="activo">
+      Curso Activo (estado = 'activo')
+    </label>
+  </div>
+
+  <!-- <div class="form-actions mt-4">
+    <button type="submit" [disabled]="cursoForm.invalid" class="btn btn-primary"> Crear Curso </button>
+  </div> -->
+
+  <div class="form-actions mt-4 d-flex gap-2 align-items-center">
+    <button type="submit" [disabled]="cursoForm.invalid" class="btn btn-primary"> Crear Curso </button>
+    <app-cancel-button navigateTo="/cursos"></app-cancel-button>
+</div>
+
+</form>

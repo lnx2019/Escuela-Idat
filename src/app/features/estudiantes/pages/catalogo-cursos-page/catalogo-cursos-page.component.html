@@ -1,0 +1,37 @@
+<div class="card-body p-2">
+  <div class="Catálogo-container">
+    <header class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Catálogo de Cursos Disponibles</h2>
+    </header>
+
+<div class="catalogo-scroll">
+  <div class="catalogo-grid">
+    @for (curso of cursos; track curso.id) {
+
+      <div class="curso-item">
+        <div class="card h-100">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">{{ curso.titulo }}</h5>
+
+            <p class="card-text flex-grow-1">
+              {{ curso.descripcion }}
+            </p>
+
+            <button (click)="inscribirse(curso)"
+                    class="btn btn-militar mt-auto"
+                    [disabled]="estaInscrito(curso.id)">
+              <i class="bi bi-check-circle me-2"></i>
+              {{ estaInscrito(curso.id) ? 'Ya Inscrito' : 'Inscribirse Ahora' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+    }
+  </div>
+</div>
+
+
+</div>
+</div>
+

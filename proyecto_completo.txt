@@ -1,0 +1,5690 @@
+===== FILE: index.html =====
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>IeRuners</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
+
+===== FILE: main.server.ts =====
+import 'zone.js/node'; 
+import { BootstrapContext, bootstrapApplication } from '@angular/platform-browser';
+import { App } from './app/app';
+import { config } from './app/app.config.server';
+
+const bootstrap = (context: BootstrapContext) =>
+    bootstrapApplication(App, config, context);
+
+export default bootstrap;
+
+===== FILE: main.ts =====
+// src/main.ts
+import 'zone.js';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { App } from './app/app';
+import { appConfig } from './app/app.config';
+
+bootstrapApplication(App, appConfig)
+  .catch((err: unknown) => console.error(err));
+
+
+// import 'zone.js';
+// import { bootstrapApplication } from '@angular/platform-browser';
+// import { App } from './app/app';
+// import { appConfig } from './app/app.config';
+// import { provideHttpClient, withFetch } from '@angular/common/http';
+
+
+// bootstrapApplication(App, appConfig)
+// .catch((err: unknown) => console.error(err));
+// provideHttpClient(withFetch());
+
+===== FILE: server.ts =====
+import {
+  AngularNodeAppEngine,
+  createNodeRequestHandler,
+  isMainModule,
+  writeResponseToNodeResponse,
+} from '@angular/ssr/node';
+import express from 'express';
+import { join } from 'node:path';
+
+const browserDistFolder = join(import.meta.dirname, '../browser');
+
+const app = express();
+const angularApp = new AngularNodeAppEngine();
+
+/**
+ * Example Express Rest API endpoints can be defined here.
+ * Uncomment and define endpoints as necessary.
+ *
+ * Example:
+ * ```ts
+ * app.get('/api/{*splat}', (req, res) => {
+ *   // Handle API request
+ * });
+ * ```
+ */
+
+/**
+ * Serve static files from /browser
+ */
+app.use(
+  express.static(browserDistFolder, {
+    maxAge: '1y',
+    index: false,
+    redirect: false,
+  }),
+);
+
+/**
+ * Handle all other requests by rendering the Angular application.
+ */
+app.use((req, res, next) => {
+  angularApp
+    .handle(req)
+    .then((response) =>
+      response ? writeResponseToNodeResponse(response, res) : next(),
+    )
+    .catch(next);
+});
+
+/**
+ * Start the server if this module is the main entry point, or it is ran via PM2.
+ * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
+ */
+if (isMainModule(import.meta.url) || process.env['pm_id']) {
+  const port = process.env['PORT'] || 4000;
+  app.listen(port, (error) => {
+    if (error) {
+      throw error;
+    }
+
+    console.log(`Node Express server listening on http://localhost:${port}`);
+  });
+}
+
+/**
+ * Request handler used by the Angular CLI (for dev-server and during build) or Firebase Cloud Functions.
+ */
+export const reqHandler = createNodeRequestHandler(app);
+
+===== FILE: styles.scss =====
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* -------------------------------------
+ * 1. VARIABLES GLOBALES (:ROOT)
+ * ------------------------------------- */
+:root {
+  --color-institucional: #1C644E; /* Verde Bosque Oscuro */
+  --color-institucional-claro: #298c6d; /* Un verde más claro para degradado */
+  --color-fondo-claro: #f8f9fa; /* Gris muy claro para el fondo general */
+  --color-border-glass: rgba(255, 255, 255, 0.18); /* Borde blanco translúcido */
+  --color-shadow-glass: rgba(0, 0, 0, 0.1); /* Sombra sutil */
+ 
+}
+
+===== FILE: app.config.server.ts =====
+import { mergeApplicationConfig, ApplicationConfig } from '@angular/core';
+import { provideServerRendering, withRoutes } from '@angular/ssr';
+import { appConfig } from './app.config';
+import { serverRoutes } from './app.routes.server';
+
+const serverConfig: ApplicationConfig = {
+  providers: [
+    provideServerRendering(withRoutes(serverRoutes))
+  ]
+};
+
+export const config = mergeApplicationConfig(appConfig, serverConfig);
+
+===== FILE: app.config.ts =====
+
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { routes } from './app.routes';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './core/interceptors/auth.interceptor'; // Importamos el interceptor funcional
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+    // 🔑 Única línea necesaria para registrar el interceptor
+    provideHttpClient(withInterceptors([authInterceptor])), 
+  ]
+};
+
+===== FILE: app.html =====
+
+===== FILE: app.routes.server.ts =====
+import { RenderMode, ServerRoute } from '@angular/ssr';
+
+export const serverRoutes: ServerRoute[] = [
+  {
+    path: '**',
+    renderMode: RenderMode.Prerender
+  }
+];
+
+===== FILE: app.routes.ts =====
+// src/app/app.routes.ts
+import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
+import { LoginPageComponent } from './features/login/pages/login-page/login-page';
+import { roleGuard } from './core/guards/role.guard';
+
+export const routes: Routes = [
+  // Rutas públicas
+  { path: 'login', component: LoginPageComponent },
+
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/register/pages/register-page/register-page.component')
+        .then(m => m.RegisterPageComponent)
+  },
+
+  // RUTA PRINCIPAL PROTEGIDA: layout + children
+  {
+    path: '',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./layout/dashboard-layout/dashboard-layout.component')
+        .then(m => m.DashboardLayoutComponent),
+    children: [
+      { 
+        path: 'dashboard',
+        canActivate: [roleGuard],
+        data: { roles: ['administrador', 'instructor', 'estudiante'] },
+        loadComponent: () =>
+          import('./features/dashboard/pages/dashboard-page/dashboard-page.component')
+            .then(m => m.DashboardPage)
+      },
+
+      {
+        path: 'usuarios',
+        canActivate: [roleGuard],
+        data: { roles: ['administrador'] },
+        loadChildren: () =>
+          import('./features/usuarios/usuarios.routes').then(m => m.USUARIOS_ROUTES)
+      },
+      {
+        path: 'estudiantes',
+        canActivate: [roleGuard],
+        data: { roles: ['administrador','instructor'] }, // Solo accesible para instructores
+        loadChildren: () =>
+          import('./features/estudiantes/estudiantes.routes').then(m => m.ESTUDIANTES_ROUTES)
+      },
+      {
+        path: 'cursos',
+        canActivate: [roleGuard],
+        data: { roles: ['administrador', 'instructor'] },
+        loadChildren: () =>
+          import('./features/cursos/cursos.routes').then(m => m.CURSOS_ROUTES)
+      },
+      {
+        path: 'inscripciones',
+        canActivate: [roleGuard],
+        data: { roles: ['administrador', 'instructor'] },
+        loadChildren: () =>
+          import('./features/inscripciones/inscripciones.routes')
+            .then(m => m.INSCRIPCIONES_ROUTES)
+      },
+      // DESPUÉS (usando 'default' para la exportación por defecto)
+      {
+        path: 'reportes',
+        canActivate: [roleGuard],
+        data: { roles: ['administrador', 'instructor'] },
+        loadComponent: () =>
+          import('./features/reportes/pages/reportes-page/reportes-page')
+            .then(m => m.default) // <--- Cambia 'm.ReportesPage' por 'm.default'
+      },
+
+      // ⬇️ NUEVAS RUTAS PARA ESTUDIANTE
+      {
+        path: 'catalogo', // 👈 Catálogo de cursos para inscribirse
+        canActivate: [roleGuard],
+        data: { roles: ['administrador','estudiante'] },
+        loadComponent: () =>
+          import('./features/estudiantes/pages/catalogo-cursos-page/catalogo-cursos-page.component')
+            .then(m => m.CatalogoCursosPage)
+      },
+      {
+        path: 'mis-cursos', // 👈 Cursos en los que está inscrito
+        canActivate: [roleGuard],
+        data: { roles: ['administrador','estudiante'] },
+        loadComponent: () =>
+          import('./features/estudiantes/pages/mis-inscripciones-page/mis-inscripciones-page.component')
+            .then(m => m.MisInscripcionesPage)
+      },
+
+      // Default dentro del layout -> dashboard
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
+  },
+
+  // Si ninguna ruta coincide -> llevar al login (solo una vez, al final)
+  { path: '**', redirectTo: '/login' }
+];
+
+===== FILE: app.scss =====
+
+===== FILE: app.ts =====
+// src/app/app.ts
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet],
+  template: `<router-outlet></router-outlet>`
+})
+export class App {}
+
+===== FILE: auth.service.ts =====
+// src/app/core/services/auth.service.ts
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { jwtDecode } from  'jwt-decode';
+import { Usuario } from '../../models/usuario.model';
+import { Router } from '@angular/router';
+
+export interface LoginResponse {
+  token: string;
+  user: Usuario;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthService {
+  private apiUrl = 'http://localhost:3000';
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
+ 
+ // 1. NUEVA PROPIEDAD: BehaviorSubject para el usuario actual
+  private userSubject = new BehaviorSubject<Usuario | null>(null);
+  public user$ = this.userSubject.asObservable(); // Observable público
+  private isBrowser: boolean;
+
+  private readonly TOKEN_KEY = 'token';
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+    if (this.isBrowser) {
+      this.isAuthenticatedSubject.next(this.hasValidToken());
+// 2. Inicializar el usuario al iniciar la app
+      this.setUserFromToken();
+    }
+  }
+  // NUEVO MÉTODO auxiliar para decodificar y establecer el usuario
+  private setUserFromToken(): void {
+    const user = this.getCurrentUser(); // Reutiliza la lógica de decodificación
+    this.userSubject.next(user);
+  }
+
+  login(credentials: { username: string; password: string }): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials).pipe(
+      tap(response => {
+        if (this.isBrowser) {
+          localStorage.setItem(this.TOKEN_KEY, response.token);
+        }
+        this.isAuthenticatedSubject.next(true);
+// 3. Establecer el usuario después de un login exitoso
+        this.setUserFromToken();
+      })
+    );
+  }
+
+  register(userData: { username: string; password: string; email: string; nombre: string; rol: string }) {
+    return this.http.post(`${this.apiUrl}/usuarios`, userData).pipe(
+      tap(response => console.log('Usuario registrado:', response))
+    );
+  }
+
+  logout(): void {
+    if (this.isBrowser) {
+      localStorage.removeItem(this.TOKEN_KEY);
+    }
+    this.isAuthenticatedSubject.next(false);
+// 4. Limpiar el usuario al cerrar sesión
+    this.userSubject.next(null); 
+    // Redirige al login inmediatamente al cerrar sesión
+    this.router.navigate(['/login']);
+    // this.router.navigate(['/login']);
+  }
+
+  getToken(): string | null {
+    return this.isBrowser ? localStorage.getItem(this.TOKEN_KEY) : null;
+  }
+
+  // Hago pública la comprobación de token para que los guards la utilicen sin hacks.
+    public hasValidToken(): boolean {
+      const token = this.getToken();
+      if (!token) return false;
+
+      try {
+        const decoded: any = jwtDecode(token);
+        return decoded.exp > Date.now() / 1000;
+      } catch {
+        return false;
+      }
+    }
+
+  getCurrentUser(): Usuario | null {
+    if (!this.isBrowser) return null;
+
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const decoded: any = jwtDecode(token);
+      const currentUser: Usuario = {
+        id: decoded.sub || decoded.id,
+        username: decoded.username,
+        email: decoded.email,
+        nombre: decoded.nombre || 'Nombre no disponible',
+        rol: decoded.rol,
+        activo: decoded.activo,
+      };
+      return currentUser;
+    } catch (error) {
+      return null;
+    }
+  }
+
+// 5. Ajustar el método hasRole para usar el BehaviorSubject
+  hasRole(roles: string[]): boolean {
+      // Usamos .value para obtener el valor actual del BehaviorSubject
+      const user = this.userSubject.value; 
+      
+      if (!user || !user.rol) { // Chequeo para null o rol vacío
+          return false;
+      }
+      // Aseguramos que los roles estén en minúsculas para la comparación
+      return roles.includes(user.rol.toLowerCase());
+  }
+}
+
+===== FILE: auth.guard.ts =====
+import { inject } from '@angular/core';
+import { Router, CanActivateFn } from '@angular/router';
+import { AuthService } from '../auth/services/auth.service';
+
+export const authGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.hasValidToken()) {
+    return true;
+  }
+
+  router.navigate(['/login']);
+  return false;
+};
+
+===== FILE: role.guard.ts =====
+import { inject } from '@angular/core';
+import { Router, CanActivateFn } from '@angular/router';
+import { AuthService } from '../auth/services/auth.service';
+
+export const roleGuard: CanActivateFn = (route) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  const user = authService.getCurrentUser();
+  const rolesPermitidos = route.data?.['roles'] as string[];
+
+  if (user && rolesPermitidos.includes(user.rol)) {
+    return true;
+  }
+
+  alert('Acceso no autorizado');
+  router.navigate(['/dashboard']);
+  return false;
+};
+
+===== FILE: auth.interceptor.ts =====
+//  * Interceptor global de autenticación: 
+//  * 1. Adjunta el token JWT a las cabeceras.
+//  * 2. Captura el error 401 (Unauthorized) y fuerza el cierre de sesión/redirección.
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { catchError, throwError } from 'rxjs';
+import { AuthService } from '../auth/services/auth.service';
+import { Router } from '@angular/router';
+
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  
+  const token = authService.getToken();
+  let request = req;
+// 1. Adjuntar el token si existe
+  if (token) {
+    request = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+  }
+// 2. Manejar la respuesta (Capturar errores 401)
+  return next(request).pipe(
+    catchError((error: HttpErrorResponse) => {
+// Si el error es 401 y no estamos en la página de login (para evitar loops)
+      if (error.status === 401 && !req.url.includes('/auth/login')) {
+        
+        console.error('ERROR 401 DETECTADO: Token expirado o inválido. Redirigiendo a login.');
+        
+// Ejecutar el cierre de sesión (limpia localStorage)
+        authService.logout(); 
+        
+        // Redirigir al login
+        router.navigate(['/login']); 
+      }
+// Re-lanzar el error para que sea manejado localmente por los servicios
+      return throwError(() => error);
+    })
+  );
+};
+
+===== FILE: curso.model.ts =====
+// src/app/core/models/curso.model.ts
+
+export interface Curso {
+  id: number;
+  titulo: string;
+  descripcion: string;
+  // ⬇️ Cambios a snake_case para coincidir con la DB
+  instructor_id: number; // Campo requerido por la DB
+  duracion_horas: number; // Cambio de nombre
+  estado: 'activo' | 'inactivo' | 'archivado'; // Cambio de 'activo: boolean' a 'estado: enum'
+  fecha_creacion: string; // Cambio de nombre
+  
+  // Si usabas 'instructor' para mostrar el nombre, puedes eliminarlo de aquí si no
+  // está en la DB, o manejarlo como un campo de solo lectura en el front.
+  // Lo eliminamos para simplificar el payload.
+}
+
+/**
+ * Payload para la creación (POST).
+ * Se omiten 'id' y 'fecha_creacion'.
+ */
+export interface CursoRegistro extends Omit<Curso, 'id' | 'fecha_creacion'> {}
+
+/**
+ * Payload para la actualización (PUT/PATCH).
+ * Se omiten 'id'. Todos los campos son opcionales.
+ */
+export interface CursoUpdate extends Partial<Omit<Curso, 'id' | 'fecha_creacion'>> {
+  // Aseguramos que 'fecha_creacion' pueda ser incluido si es PUT total.
+  fecha_creacion?: string; 
+}
+
+===== FILE: dynamic-response.model.ts =====
+export interface DynamicResponse<T = any> {
+  success: boolean;
+  route: string;
+  data: T;
+}
+
+===== FILE: usuario.model.ts =====
+export interface Usuario {
+  id: number;
+  username: string;
+  email: string;
+  nombre: string;
+  rol: 'administrador' | 'instructor' | 'estudiante';
+  activo: number;
+}
+
+export interface UsuarioRegistro extends Omit<Usuario, 'id' | 'activo'> {
+  password: string;
+}
+
+export type UsuarioUpdate = Partial<Omit<Usuario, 'id'>>; 
+
+export interface UserLogin {
+  username: string;
+  password: string;
+}
+
+export interface UserRegistration extends Omit<Usuario, 'id'> {
+  password: string;
+}
+
+export interface UserUpdate extends Partial<Omit<Usuario, 'id'>> {
+}
+
+export interface AuthResponse {
+  token: string;
+  usuario: Usuario;
+}
+
+export interface Inscripcion {
+  id: number;
+  estudiante_id: number;
+  curso_id: number;
+  fecha_inscripcion: Date;
+  estado: 'activo' | 'completado' | 'cancelado';
+  // ⬇️ CAMPOS AGREGADOS PARA VISUALIZACIÓN (Asumimos que el backend los proporciona vía JOIN)
+  nombreEstudiante: string;
+  nombreCurso: string;
+}
+
+export interface Estudiante extends Usuario {
+  fecha_registro: Date;
+}
+
+===== FILE: curso.service.ts =====
+// src/app/core/services/curso.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpResponse, HttpHeaders } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { Curso, CursoRegistro, CursoUpdate } from '../models/curso.model';
+import { AuthService } from '../auth/services/auth.service'; // Asegúrate de importar tu AuthService
+
+interface CursosPaginadosResponse {
+  data: Curso[];
+  total: number;
+}
+
+@Injectable({ providedIn: 'root' })
+export class CursoService {
+  private apiUrl = 'http://localhost:3000';
+
+  constructor(private http: HttpClient, private authService: AuthService) {}
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return headers;
+  }
+
+  /**
+   * ⬇️ CORRECCIÓN CLAVE: La petición GET ahora usa el token de autenticación.
+   */
+  getCursosPaginados(page: number, limit: number): Observable<CursosPaginadosResponse> {
+    const url = `${this.apiUrl}/cursos?_page=${page}&_limit=${limit}`;
+    
+    return this.http.get<Curso[]>(url, { 
+      observe: 'response', 
+      headers: this.getAuthHeaders() // 🔑 Incluir los headers aquí
+    }).pipe(
+      map((response: HttpResponse<Curso[]>) => {
+        const data = response.body ?? [];
+        const totalHeader = response.headers.get('X-Total-Count');
+        const total = totalHeader ? parseInt(totalHeader, 10) : data.length;
+        return { data, total };
+      })
+    );
+  }
+
+  getCursoById(id: number): Observable<Curso> {
+    // Es buena práctica incluir el token aquí también, si la ruta es protegida
+    return this.http.get<Curso>(`${this.apiUrl}/cursos/${id}`, { headers: this.getAuthHeaders() });
+  }
+
+  crearCurso(curso: CursoRegistro): Observable<Curso> {
+    return this.http.post<Curso>(`${this.apiUrl}/cursos`, curso, { headers: this.getAuthHeaders() });
+  }
+
+  actualizarCurso(id: number, curso: CursoUpdate): Observable<Curso> {
+    return this.http.put<Curso>(`${this.apiUrl}/cursos/${id}`, curso, { headers: this.getAuthHeaders() });
+  }
+
+  deleteCurso(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/cursos/${id}`, { headers: this.getAuthHeaders() });
+  }
+  
+  // Asumimos que esta ruta también es protegida
+  getCursosTotalCount(): Observable<number> {
+    return this.http.get<Curso[]>(`${this.apiUrl}/cursos`, { headers: this.getAuthHeaders() }).pipe(
+      map(cursos => cursos.length)
+    );
+  }
+
+  listar() {
+    return this.http.get<Curso[]>(`${this.apiUrl}/cursos`);
+  }
+
+  getCatalogoCursos(): Observable<Curso[]> {
+      // Filtramos solo los activos y usamos headers de auth.
+      return this.http.get<Curso[]>(
+          `${this.apiUrl}/cursos?estado=activo`, 
+          { headers: this.getAuthHeaders() }
+      );
+  }
+}
+
+===== FILE: dashboard.service.ts =====
+import { Injectable } from '@angular/core';
+import { forkJoin, map, tap } from 'rxjs';
+import { UsuarioService } from '../services/usuario.service';
+import { CursoService } from '../services/curso.service';
+import { InscripcionService } from '../services/inscripcion.service';
+
+@Injectable({ providedIn: 'root' })
+export class DashboardService {
+
+    constructor(
+    private usuarios: UsuarioService,
+    private cursos: CursoService,
+    private inscripciones: InscripcionService,
+    private estudiantes: UsuarioService
+  ) {}
+
+  obtenerMétricas() {
+    // Definimos 'hoy' una sola vez para cálculos consistentes.
+    const hoy = new Date();
+
+    return forkJoin({
+      usuarios: this.usuarios.listar(),
+      cursos: this.cursos.listar(),
+      ins: this.inscripciones.listar(),
+      est: this.estudiantes.getEstudiantes()
+    }).pipe(
+        map(({ usuarios, cursos, ins, est }) => ({
+        usuariosTotales: usuarios.length,
+        usuariosActivos: usuarios.filter(u => u.activo === 1).length,
+
+        cursosActivos: cursos.filter(c => c.estado === 'activo').length,
+        cursosInactivos: cursos.filter(c => c.estado !== 'activo').length,
+        estudiantesTotales: est.length,
+        estudiantesHoy: est.filter(s => {
+        const fecha = new Date((s as any).fecha_registro); 
+        return (
+            fecha.getFullYear() === hoy.getFullYear() &&
+            fecha.getMonth() === hoy.getMonth() &&
+            fecha.getDate() === hoy.getDate()
+        );
+        }).length,
+
+        inscripcionesActivas: ins.filter(i => i.estado === 'activo').length,
+        inscripcionesCanceladas: ins.filter(i => i.estado === 'cancelado').length,
+
+        actividadReciente: ins
+        .sort((a, b) => new Date(b.fecha_inscripcion).getTime() - new Date(a.fecha_inscripcion).getTime())
+        .slice(0, 4)
+        .map(i => ({ ...i, fecha: i.fecha_inscripcion })),
+    }))
+    );
+  }
+  
+}
+
+
+===== FILE: inscripcion.service.ts =====
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { AuthService } from '../auth/services/auth.service';
+import { DynamicResponse } from '../models/dynamic-response.model';
+
+export interface Inscripcion {
+  id: number;
+  estudiante_id: number;
+  curso_id: number;
+  fecha_inscripcion: string;
+  estado: 'activo' | 'completado' | 'cancelado';
+  estudiante_nombre: string;
+  curso_titulo: string;
+}
+
+export interface InscripcionRegistro {
+  estudiante_id: number;
+  curso_id: number;
+  estudiante_nombre?: string;
+  curso_titulo?: string;
+}
+
+export interface InscripcionesPaginadasResponse {
+  data: Inscripcion[];
+  total: number;
+}
+
+@Injectable({ providedIn: 'root' })
+export class InscripcionService {
+  private apiUrl = 'http://localhost:3000';
+
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {}
+
+  private getHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    if (token) headers = headers.set('Authorization', `Bearer ${token}`);
+    return headers;
+  }
+
+  crearInscripcion(payload: InscripcionRegistro): Observable<Inscripcion> {
+    return this.http.post<DynamicResponse<Inscripcion>>(
+      `${this.apiUrl}/inscripciones`,
+      payload,
+      { headers: this.getHeaders() }
+    ).pipe(map(res => res.data));
+  }
+
+  getInscripcionesPaginadas(page: number, limit: number): Observable<InscripcionesPaginadasResponse> {
+    const params = { page, limit };
+    return this.http.get<DynamicResponse<any>>(
+      `${this.apiUrl}/inscripciones/paginado`,
+      { params, headers: this.getHeaders() }
+    ).pipe(map(res => ({
+      data: res.data.inscripciones ?? [],
+      total: res.data.total ?? 0
+    })));
+  }
+
+  getInscripcionById(id: number): Observable<Inscripcion> {
+    return this.http.get<DynamicResponse<Inscripcion>>(
+      `${this.apiUrl}/inscripciones/${id}`,
+      { headers: this.getHeaders() }
+    ).pipe(map(res => res.data));
+  }
+
+  actualizarEstado(id: number, estado: 'activo' | 'completado' | 'cancelado'): Observable<Inscripcion> {
+    return this.http.patch<DynamicResponse<Inscripcion>>(
+      `${this.apiUrl}/inscripciones/${id}`,
+      { estado },
+      { headers: this.getHeaders() }
+    ).pipe(map(res => res.data));
+  }
+
+  eliminarInscripcion(id: number): Observable<any> {
+    return this.http.delete<DynamicResponse<any>>(
+      `${this.apiUrl}/inscripciones/${id}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  getInscripcionesCount(): Observable<number> {
+    return this.http.get<DynamicResponse<{ count: number }>>(
+      `${this.apiUrl}/inscripciones/count`,
+      { headers: this.getHeaders() }
+    ).pipe(map(res => res.data.count));
+  }
+
+  validarDuplicado(estudiante_id: number, curso_id: number): Observable<boolean> {
+    return this.http.get<DynamicResponse<{ existe: boolean }>>(
+      `${this.apiUrl}/inscripciones/validar`,
+      { params: { estudiante_id, curso_id }, headers: this.getHeaders() }
+    ).pipe(map(res => res.data.existe));
+  }
+
+  listar(): Observable<Inscripcion[]> {
+    return this.http.get<Inscripcion[]>(`${this.apiUrl}/inscripciones`);
+  }
+
+  fRegistro(): Observable<Inscripcion[]> {
+   return this.http.get<Inscripcion[]>(`${this.apiUrl}/inscripciones/fregistro`);
+ }
+
+  getInscripcionesByEstudianteId(estudianteId: number): Observable<Inscripcion[]> {
+      // Asumimos que el backend soporta el filtro por estudiante_id
+      return this.http.get<Inscripcion[]>(
+          `${this.apiUrl}/inscripciones?estudiante_id=${estudianteId}`, 
+          { headers: this.getHeaders() }
+      );
+  }
+
+  // en InscripcionService
+// getInscripcionesByEstudianteId(estudianteId: number): Observable<Inscripcion[]> {
+//   return this.http.get<DynamicResponse<Inscripcion[]>>(
+//     `${this.apiUrl}/inscripciones`,
+//     {
+//       params: { estudiante_id: String(estudianteId) },
+//       headers: this.getHeaders()
+//     }
+//   ).pipe(
+//     map(res => res.data ?? [])
+//   );
+// }
+
+}
+
+===== FILE: reportes.service.ts =====
+// src/app/services/reportes.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ReportesService {
+  private apiUrl = 'http://localhost:3000/reportes'; // Base URL para tus endpoints de reportes
+
+  constructor(private http: HttpClient) { }
+
+  /**
+   * Obtiene el reporte de los cursos más populares (con más inscripciones).
+   * GET /api/reportes/cursos-populares
+   */
+  getCursosPopulares(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/cursos-populares`);
+  }
+
+  /**
+   * Obtiene el conteo de usuarios agrupados por rol.
+   * GET /api/reportes/usuarios-por-rol
+   */
+  getUsuariosPorRol(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/usuarios-por-rol`);
+  }
+
+  /**
+   * Obtiene el listado de instructores y el número de cursos que imparten.
+   * GET /api/reportes/instructores-cursos
+   */
+  getInstructoresYCursos(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/instructores-cursos`);
+  }
+}
+
+===== FILE: usuario.service.ts =====
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+// ⬇️ Necesario para las cabeceras HTTP y el token
+import { HttpClient, HttpHeaders } from '@angular/common/http'; 
+import { BehaviorSubject, Observable } from 'rxjs';
+import { Usuario } from '../models/usuario.model';
+import { isPlatformBrowser } from '@angular/common';
+import { map } from 'rxjs/operators';
+import { DynamicResponse } from '../models/dynamic-response.model';
+// ⬇️ CLAVE: Importamos el servicio de autenticación
+import { AuthService } from '../auth/services/auth.service'; 
+
+
+//--------------------------------------------------------------//
+interface UsuariosPaginadosResponse {
+    data: Usuario[];
+    total: number;
+}
+//--------------------------------------------------------------//
+
+@Injectable({
+  providedIn: 'root'
+})
+export class UsuarioService {
+  private apiUrl = 'http://localhost:3000';
+  // ⚠️ Eliminamos la variable isBrowser, el AuthService se encarga de esto.
+
+  private usuariosSubject = new BehaviorSubject<Usuario[]>([]);
+  usuarios$ = this.usuariosSubject.asObservable();
+
+  constructor(
+    private http: HttpClient,
+    // ⬇️ CLAVE: Inyectamos el AuthService
+    private authService: AuthService,
+    // ⚠️ Mantenemos PLATFORM_ID solo si es estrictamente necesario, pero lo quitamos del constructor si no se usa.
+    @Inject(PLATFORM_ID) platformId: Object 
+  ) {}
+
+
+  // ⬇️ CLAVE: Método auxiliar para obtener las cabeceras con el JWT Token
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
+
+    if (token) {
+      // Formato estándar para enviar el token
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return headers;
+  }
+  // ⬆️ FIN CLAVE
+
+  //--------------------------------------------------------------//
+  // 🔑 Aplicamos las cabeceras a todas las peticiones protegidas (CRUD y Listados)
+
+  getInstructores(): Observable<Usuario[]> {
+    const url = `${this.apiUrl}/usuarios?rol=instructor&activo=1`;
+    return this.http.get<Usuario[]>(url, { headers: this.getAuthHeaders() });
+  }
+
+  getUsuarios(): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`, { headers: this.getAuthHeaders() });
+  }
+
+  getUsuarioActivoCount(): Observable<number> {
+    return this.http
+      .get<DynamicResponse<{ count: number }>>(
+        `${this.apiUrl}/usuarios/activos/count`, 
+        { headers: this.getAuthHeaders() } // Aplicado
+      )
+      .pipe(map(response => response.data.count));
+  }
+
+  getUsuariosPaginados(page: number, limit: number): Observable<UsuariosPaginadosResponse> {
+    const params = { page: page.toString(), limit: limit.toString() };
+
+    return this.http
+      .get<any>(`${this.apiUrl}/usuarios/paginado`, { params, headers: this.getAuthHeaders() }) // Aplicado
+      .pipe(
+        map(res => ({
+          data: res?.data ?? [],
+          total: res?.total ?? 0
+        }))
+      );
+  }
+
+  getUsuarioById(id: number): Observable<Usuario> {
+    return this.http
+      .get<Usuario>(`${this.apiUrl}/usuarios/${id}`, { headers: this.getAuthHeaders() }) // Aplicado
+      .pipe(map((res: any) => res.data ?? res));
+  }
+
+  crearUsuario(usuario: any) {
+    return this.http.post<any>(`${this.apiUrl}/usuarios`, usuario, { headers: this.getAuthHeaders() }).pipe( // Aplicado
+      map(res => res.data ?? res.usuario ?? res.user ?? res[0] ?? res)
+    );
+  }
+
+  actualizarUsuario(id: number, usuario: Partial<Usuario>): Observable<Usuario> {
+    return this.http
+      .put(`${this.apiUrl}/usuarios/${id}`, usuario, { headers: this.getAuthHeaders() }) // Aplicado
+      .pipe(map((res: any) => res.data ?? res));
+  }
+
+  deleteUsuario(id: number): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(
+      `${this.apiUrl}/usuarios/${id}`,
+      { headers: this.getAuthHeaders() } // Aplicado
+    );
+  }
+
+  getUsuariosTotalCount(): Observable<number> {
+    return this.http.get<any[]>(`${this.apiUrl}/usuarios`, { headers: this.getAuthHeaders() }).pipe( // Aplicado
+      map(usuarios => usuarios.length)
+    );
+  }
+
+  getEstudiantes() {
+      return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios?rol=estudiante`);
+  }
+
+  listar() {
+    return this.http.get<Usuario[]>(`${this.apiUrl}/usuarios`);
+  }
+
+}
+
+===== FILE: cursos.routes.ts =====
+// src/app/features/cursos/cursos.routes.ts
+
+import { Routes } from '@angular/router';
+
+export const CURSOS_ROUTES: Routes = [
+  // LISTADO DE CURSOS (/dashboard/cursos)
+  {
+    path: '',
+    loadComponent: () =>
+      import('./pages/cursos-page/cursos-page').then(
+        (m) => m.CursosPage
+      ),
+    pathMatch: 'full',
+  },
+
+  // CREAR CURSO (/dashboard/cursos/crear)
+  {
+    path: 'crear',
+    loadComponent: () =>
+      import('./pages/cursos-create-page/cursos-create-page').then( // Se asume el sufijo .component
+        (m) => m.CursosCreatePage
+      ),
+  },
+
+  // EDITAR CURSO (/dashboard/cursos/editar/:id)
+  {
+    path: 'editar/:id',
+    loadComponent: () =>
+      import('./pages/cursos-edit-page/cursos-edit-page').then( // Se asume el sufijo .component
+        (m) => m.CursosEditPage
+      ),
+  },
+];
+
+===== FILE: cursos-form-create.html =====
+<form [formGroup]="cursoForm" (ngSubmit)="guardarCurso()" class="p-4 border rounded shadow-sm">
+
+  <div class="mb-3">
+    <label for="titulo" class="form-label">Título del Curso</label>
+    <input type="text" id="titulo" formControlName="titulo" class="form-control" placeholder="Ej: Desarrollo Web con Angular">
+    </div>
+
+  <div class="mb-3">
+    <label for="descripcion" class="form-label">Descripción</label>
+    <textarea id="descripcion" formControlName="descripcion" class="form-control" rows="3" placeholder="Descripción breve del contenido del curso."></textarea>
+    </div>
+
+<div class="form-group">
+  <label for="instructor_id">Instructor</label>
+  
+  <select 
+    id="instructor_id" 
+    formControlName="instructor_id" 
+    class="form-control"
+    [disabled]="cargandoInstructores || instructores.length === 0"
+  >
+    <option [ngValue]="null" disabled>
+      -- {{ cargandoInstructores ? 'Cargando...' : 'Seleccione un Instructor' }} --
+    </option>
+    
+    <option *ngFor="let instructor of instructores" [ngValue]="instructor.id">
+      {{ instructor.nombre }} ({{ instructor.email }})
+    </option>
+  </select>
+
+  <div *ngIf="cursoForm.get('instructor_id')?.invalid && cursoForm.get('instructor_id')?.touched" class="text-danger">
+    Se requiere seleccionar un instructor válido.
+  </div>
+</div>    
+
+  <div class="mb-3">
+    <label for="duracion_horas" class="form-label">Duración (en horas)</label>
+    <input type="number" id="duracion_horas" formControlName="duracion_horas" class="form-control" placeholder="Ej: 40">
+    @if (cursoForm.get('duracion_horas')?.invalid && cursoForm.get('duracion_horas')?.touched) {
+      <div class="text-danger small mt-1">
+        @if (cursoForm.get('duracion_horas')?.errors?.['required']) {
+          La duración es obligatoria.
+        }
+        @else if (cursoForm.get('duracion_horas')?.errors?.['min']) {
+          La duración debe ser positiva.
+        }
+      </div>
+    }
+  </div>
+
+  <div class="form-check mb-4">
+    <input class="form-check-input" type="checkbox" id="activo" formControlName="activo">
+    <label class="form-check-label" for="activo">
+      Curso Activo (estado = 'activo')
+    </label>
+  </div>
+
+  <!-- <div class="form-actions mt-4">
+    <button type="submit" [disabled]="cursoForm.invalid" class="btn btn-primary"> Crear Curso </button>
+  </div> -->
+
+  <div class="form-actions mt-4 d-flex gap-2 align-items-center">
+    <button type="submit" [disabled]="cursoForm.invalid" class="btn btn-primary"> Crear Curso </button>
+    <app-cancel-button navigateTo="/cursos"></app-cancel-button>
+</div>
+
+</form>
+
+===== FILE: cursos-form-create.scss =====
+
+===== FILE: cursos-form-create.ts =====
+import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core'; // 💡 Añadir Input
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { CursoRegistro } from '../../../../core/models/curso.model';
+import { Usuario } from '../../../../core/models/usuario.model';
+import { CancelButtonComponent } from "../../../../shared/components/cancel-button/cancel-button.component"; // 💡 Nuevo: Importar Usuario
+
+@Component({
+  selector: 'app-cursos-form-create',
+  standalone: true,
+  imports: [ReactiveFormsModule, CommonModule, CancelButtonComponent],
+  templateUrl: './cursos-form-create.html', // Asumo que el HTML sigue existiendo
+  styleUrls: ['./cursos-form-create.scss']
+})
+
+export class CursosFormCreateComponent implements OnInit {
+  cursoForm!: FormGroup;
+  @Output() cursoRegistrado = new EventEmitter<CursoRegistro>();
+  @Input() instructores: Usuario[] = []; 
+  @Input() cargandoInstructores = true;
+
+  constructor(private fb: FormBuilder) {}
+
+ngOnInit(): void {
+    this.cursoForm = this.fb.group({
+      titulo: ['', [Validators.required, Validators.maxLength(100)]],
+      descripcion: ['', [Validators.required, Validators.maxLength(500)]],
+      
+      // ✅ Inicializamos con 'null' para forzar la selección
+      instructor_id: [null, [Validators.required, Validators.min(1)]],
+      
+      duracion_horas: [0, [Validators.required, Validators.min(1)]], 
+      
+      activo: [true, [Validators.required]],
+    });
+  }
+
+  guardarCurso(): void {
+    if (this.cursoForm.valid) {
+      const formValue = this.cursoForm.value;
+      
+      // Mapear 'activo' (booleano) a 'estado' (enum)
+      const estadoValue = formValue.activo ? 'activo' : 'inactivo';
+
+      // Construir el payload final con snake_case
+      const cursoData: CursoRegistro = {
+        titulo: formValue.titulo,
+        descripcion: formValue.descripcion,
+        instructor_id: Number(formValue.instructor_id), // Asegurar tipo number
+        duracion_horas: Number(formValue.duracion_horas), // Asegurar tipo number
+        estado: estadoValue as 'activo' | 'inactivo' | 'archivado'
+        // 'fecha_creacion' e 'id' son generados por el backend (json-server)
+      };
+
+      this.cursoRegistrado.emit(cursoData);
+    } else {
+      this.cursoForm.markAllAsTouched();
+    }
+  }
+}
+
+===== FILE: cursos-form-edit.html =====
+@if (cursoForm) {
+<form [formGroup]="cursoForm" (ngSubmit)="guardarCurso()" class="p-4 border rounded shadow-sm">
+
+  <div class="mb-3">
+    <label for="id" class="form-label">ID del Curso</label>
+    <input type="text" id="id" formControlName="id" class="form-control" readonly>
+  </div>
+  <input type="hidden" formControlName="fecha_creacion"> 
+
+  <div class="mb-3">
+    <label for="titulo" class="form-label">Título del Curso</label>
+    <input type="text" id="titulo" formControlName="titulo" class="form-control" placeholder="Ej: Desarrollo Web con Angular">
+    </div>
+
+  <div class="mb-3">
+    <label for="descripcion" class="form-label">Descripción</label>
+    <textarea id="descripcion" formControlName="descripcion" class="form-control" rows="3" placeholder="Descripción breve del contenido del curso."></textarea>
+    </div>
+  
+  <label for="instructor_id">Instructor</label>
+    <select 
+      id="instructor_id" 
+      formControlName="instructor_id" 
+      class="form-control"
+    >
+      <option [ngValue]="null" disabled>-- Seleccione un Instructor --</option>
+      
+      <option *ngFor="let instructor of instructores" [ngValue]="instructor.id">
+        {{ instructor.nombre }} ({{ instructor.email }})
+      </option>
+    </select>
+
+    <div *ngIf="cursoForm.get('instructor_id')?.invalid && cursoForm.get('instructor_id')?.touched" class="text-danger">
+      Se requiere seleccionar un instructor.
+    </div>
+
+    <!-- <div class="mb-3">
+    <label for="instructor_id" class="form-label">ID del Instructor</label>
+    <input type="number" id="instructor_id" formControlName="instructor_id" class="form-control" placeholder="ID del instructor (ej: 1)">
+    @if (cursoForm.get('instructor_id')?.invalid && cursoForm.get('instructor_id')?.touched) {
+      <div class="text-danger small mt-1">El ID del instructor es obligatorio.</div>
+    }
+  </div> -->
+
+  <div class="mb-3">
+    <label for="duracion_horas" class="form-label">Duración (en horas)</label>
+    <input type="number" id="duracion_horas" formControlName="duracion_horas" class="form-control" placeholder="Ej: 40">
+    @if (cursoForm.get('duracion_horas')?.invalid && cursoForm.get('duracion_horas')?.touched) {
+      <div class="text-danger small mt-1">
+        </div>
+    }
+  </div>
+
+  <div class="form-check mb-4">
+    <input class="form-check-input" type="checkbox" id="activo" formControlName="activo">
+    <label class="form-check-label" for="activo">
+      Curso Activo (estado = 'activo')
+    </label>
+  </div>
+
+  <div class="form-actions mt-4 d-flex justify-content-end">
+    <button type="button" (click)="onCancelar()" class="btn btn-secondary me-2"> Cancelar </button>
+    <button type="submit" [disabled]="cursoForm.invalid" class="btn btn-primary"> Guardar Cambios </button>
+  </div>
+</form>
+}
+
+===== FILE: cursos-form-edit.scss =====
+
+===== FILE: cursos-form-edit.ts =====
+// src/app/features/cursos/components/cursos-form-edit/cursos-form-edit.component.ts
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { Curso, CursoUpdate } from '../../../../core/models/curso.model';
+// ... otras importaciones
+import { Usuario } from '../../../../core/models/usuario.model'; // 👈 Nuevo
+import { UsuarioService } from '../../../../core/services/usuario.service'; // 👈 Nuevo
+import { catchError, of, tap } from 'rxjs';
+
+@Component({
+  selector: 'app-cursos-form-edit',
+  standalone: true,
+  imports: [ReactiveFormsModule, CommonModule],
+  templateUrl: './cursos-form-edit.html',
+  styleUrls: ['./cursos-form-edit.scss']
+})
+export class CursosFormEditComponent implements OnInit, OnChanges {
+  @Input({ required: true }) curso!: Curso;
+  @Output() cursoActualizado = new EventEmitter<CursoUpdate>();
+  @Output() cancelar = new EventEmitter<void>();
+
+  cursoForm!: FormGroup;
+  // 💡 NUEVA PROPIEDAD: Para almacenar la lista de instructores
+  instructores: Usuario[] = [];
+  cargandoInstructores = true;
+
+  constructor(
+    private fb: FormBuilder, private usuarioService: UsuarioService, // 👈 Inyectar el servicio de usuarios
+  ) { this.cursoForm = this.fb.group({}) }
+
+  ngOnInit(): void {
+    this.cargarInstructores();
+    this.initForm(this.curso);
+  }
+
+  // 💡 NUEVO MÉTODO: Cargar la lista de instructores
+cargarInstructores(): void {
+  this.cargandoInstructores = true;
+  this.usuarioService.getInstructores()
+    .pipe(
+      // Ya que el servicio devuelve Usuario[], la tubería lo recibe.
+      // Puedes eliminar el tipado explícito 'res: Usuario[]' o mantenerlo.
+      tap((res) => { 
+        // ✅ Corrección: Asignamos el arreglo 'res' directamente
+        this.instructores = res;
+        this.cargandoInstructores = false;
+      }),
+      // El catchError ya devuelve un arreglo vacío compatible, por lo que está bien.
+      catchError((err) => {
+        console.error('Error al cargar instructores:', err);
+        this.cargandoInstructores = false;
+        return of([]); 
+      })
+    )
+    .subscribe();
+}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['curso'] && this.curso) {
+      this.initForm(this.curso);
+    }
+  }
+
+initForm(curso: Curso): void {
+    // Convertimos estado ('activo'|'inactivo') a booleano 'activo' para el checkbox
+    const activoFromEstado = curso.estado === 'activo'; 
+    
+    this.cursoForm = this.fb.group({
+      id: [curso.id, [Validators.required]],
+      titulo: [curso.titulo, [Validators.required, Validators.maxLength(100)]],
+      descripcion: [curso.descripcion, [Validators.required, Validators.maxLength(500)]],
+      
+      // ⬇️ Nombre de control: instructor_id
+      instructor_id: [curso.instructor_id, [Validators.required, Validators.min(1)]],
+      
+      // ⬇️ Nombre de control: duracion_horas
+      duracion_horas: [curso.duracion_horas, [Validators.required, Validators.min(0)]],
+      
+      // ⬇️ Control temporal para el checkbox (activo/inactivo)
+      activo: [activoFromEstado, [Validators.required]], 
+      
+      // ⬇️ Campo necesario para el PUT: fecha_creacion
+      fecha_creacion: [curso.fecha_creacion]
+    });
+  }
+
+  guardarCurso(): void {
+    if (this.cursoForm.valid) {
+      const formValue = this.cursoForm.value;
+      
+      // 1. Mapear 'activo' (booleano) a 'estado' (enum)
+      const estadoValue = formValue.activo ? 'activo' : 'inactivo';
+
+      // 2. Construir el payload con todos los campos de la DB/API, excluyendo el 'id'
+      const cursoData: CursoUpdate = {
+        titulo: formValue.titulo,
+        descripcion: formValue.descripcion,
+        instructor_id: Number(formValue.instructor_id),
+        duracion_horas: Number(formValue.duracion_horas),
+        estado: estadoValue as 'activo' | 'inactivo' | 'archivado', // Asegurar el tipo
+        fecha_creacion: formValue.fecha_creacion // CLAVE: Necesario para el PUT
+      };
+
+      this.cursoActualizado.emit(cursoData);
+    } else {
+      this.cursoForm.markAllAsTouched();
+    }
+  }
+
+
+  // guardarCurso(): void {
+  //   if (this.cursoForm.valid) {
+  //     // Separamos el ID para usar solo el payload de actualización
+  //     const { id, ...payload } = this.cursoForm.value;
+  //     const cursoData: CursoUpdate = {
+  //       ...payload,
+  //       duracionHoras: Number(payload.duracionHoras)
+  //     };
+
+  //     this.cursoActualizado.emit(cursoData);
+  //   } else {
+  //     this.cursoForm.markAllAsTouched();
+  //   }
+  // }
+
+  onCancelar(): void {
+    this.cancelar.emit();
+  }
+}
+
+===== FILE: cursos-create-page.html =====
+
+===== FILE: cursos-create-page.scss =====
+
+===== FILE: cursos-create-page.ts =====
+// src/app/features/cursos/pages/cursos-create-page/cursos-create-page.component.ts
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { catchError, of, tap } from 'rxjs';
+import { CursoService } from '../../../../core/services/curso.service';
+import { CursoRegistro } from '../../../../core/models/curso.model';
+import { CursosFormCreateComponent } from '../../components/cursos-form-create/cursos-form-create'; // Asegúrate de la extensión .component
+import { Usuario } from '../../../../core/models/usuario.model';
+import { UsuarioService } from '../../../../core/services/usuario.service';
+
+@Component({
+  selector: 'app-cursos-create-page',
+  standalone: true,
+  imports: [CommonModule, CursosFormCreateComponent],
+  template: `
+    <div class="container my-4">
+      <h2>Crear Nuevo Curso</h2>
+            <app-cursos-form-create
+        [instructores]="instructores"
+        [cargandoInstructores]="cargandoInstructores"
+        (cursoRegistrado)="crearCurso($event)">
+      </app-cursos-form-create>
+    </div>
+  `,
+  styleUrls: ['./cursos-create-page.scss']
+})
+export class CursosCreatePage implements OnInit {
+  
+  instructores: Usuario[] = []; 
+  cargandoInstructores = true;
+
+  constructor( 
+    // private fb: FormBuilder, // ❌ Ya no es necesario, el formulario está en el hijo
+    private cursoService: CursoService, 
+    private router: Router,
+    private usuarioService: UsuarioService){}
+
+    ngOnInit(): void {
+        // this.initForm(); // ❌ Ya no es necesario, el formulario se inicializa en el hijo
+        this.cargarInstructores(); 
+    }
+
+  // ❌ El método initForm ya no pertenece a este componente
+  // initForm(): void { ... }
+
+  cargarInstructores(): void {
+  this.cargandoInstructores = true;
+  this.usuarioService.getInstructores()
+    .pipe(
+      tap((res: Usuario[]) => { 
+        this.instructores = res;
+        this.cargandoInstructores = false;
+      }),
+      catchError((err) => {
+        console.error('Error al cargar instructores:', err);
+        this.cargandoInstructores = false;
+        return of([]); 
+      })
+    )
+    .subscribe();
+}
+
+  crearCurso(cursoData: CursoRegistro): void {
+    this.cursoService.crearCurso(cursoData).subscribe({
+      next: (cursoCreado) => {
+        alert(`Curso ${cursoCreado.titulo} creado correctamente.`); 
+        // Asumiendo que /cursos es la ruta al listado, ajusta si es necesario
+        this.router.navigate(['/cursos']); 
+      },
+      error: (err) => {
+        console.error('Error durante la creación:', err);
+        alert('Error al crear el curso. Revisa la consola.');
+      }
+    });
+  }
+}
+
+===== FILE: cursos-edit-page.html =====
+<p>cursos-edit-page works!</p>
+
+===== FILE: cursos-edit-page.scss =====
+
+===== FILE: cursos-edit-page.ts =====
+// src/app/features/cursos/pages/cursos-edit-page/cursos-edit-page.component.ts
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { CursoService } from '../../../../core/services/curso.service';
+import { Curso, CursoUpdate } from '../../../../core/models/curso.model';
+import { CursosFormEditComponent } from '../../components/cursos-form-edit/cursos-form-edit';
+import { catchError, of, tap } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+
+@Component({
+  selector: 'app-cursos-edit-page',
+  standalone: true,
+  imports: [CommonModule, CursosFormEditComponent],
+  template: `
+    <div class="container my-4">
+      <h2>Editar Curso</h2>
+      @if (isLoading) {
+        <div class="alert alert-info">Cargando datos del curso...</div>
+      }
+      @else if (cursoActual) {
+        <app-cursos-form-edit
+          [curso]="cursoActual"
+          (cursoActualizado)="actualizarCurso($event)"
+          (cancelar)="onCancelar()"
+        ></app-cursos-form-edit>
+      }
+      @else {
+        <div class="alert alert-danger">
+          No se encontró el curso o hubo un error de carga.
+        </div>
+      }
+    </div>
+  `,
+  styleUrls: ['./cursos-edit-page.scss']
+})
+export class CursosEditPage implements OnInit {
+  cursoActual: Curso | null = null;
+  isLoading = true;
+  cursoId!: number;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private cursoService: CursoService
+  ) {}
+
+  ngOnInit(): void {
+    this.route.params.pipe(
+      tap(params => {
+        this.cursoId = +params['id'];
+        if (isNaN(this.cursoId)) {
+            throw new Error('ID de curso no válido.');
+        }
+      }),
+      switchMap(() => {
+        return this.cursoService.getCursoById(this.cursoId).pipe(
+          catchError(err => {
+            console.error('Error al cargar el curso:', err);
+            this.isLoading = false;
+            return of(null);
+          })
+        );
+      })
+    ).subscribe(curso => {
+      this.cursoActual = curso;
+      this.isLoading = false;
+    });
+  }
+
+  actualizarCurso(payload: CursoUpdate): void {
+    this.cursoService.actualizarCurso(this.cursoId, payload)
+      .pipe(
+        tap((curso) => {
+          alert(`Curso '${curso.titulo}' actualizado con éxito.`);
+          this.router.navigate(['/cursos']);
+        }),
+        catchError((error) => {
+          console.error('Error al actualizar el curso:', error);
+          alert('Error al actualizar el curso.');
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+
+  onCancelar(): void {
+    this.router.navigate(['/cursos']);
+  }
+}
+
+===== FILE: cursos-page.html =====
+<div class="cursos-list-container p-4">
+  <header class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Listado de Cursos</h2>
+    <button (click)="nuevoCurso()" class="btn btn-primary">
+      ➕ Nuevo Curso
+    </button>
+  </header>
+
+  @if (cargando) {
+    <div class="alert alert-info">Cargando cursos...</div>
+  } @else if (error) {
+    <div class="alert alert-danger">{{ error }}</div>
+  } @else if (cursos.length === 0) {
+    <div class="alert alert-warning">No se encontraron cursos registrados.</div>
+  }
+
+  @if (cursos.length > 0) {
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Título</th>
+            <th>Instructor ID</th>
+            <th>Duración (h)</th>
+            <th>Estado</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (curso of cursos; track curso.id) {
+            <tr>
+              <td>{{ curso.id }}</td>
+              <td>{{ curso.titulo }}</td>
+              
+              <td>{{ curso.instructor_id }}</td>
+              
+              <td>{{ curso.duracion_horas }}</td>
+              
+              <td>
+                <span class="badge" 
+                      [ngClass]="{
+                        'bg-success': curso.estado === 'activo', 
+                        'bg-warning': curso.estado === 'inactivo',
+                        'bg-secondary': curso.estado === 'archivado'
+                      }">
+                  {{ curso.estado | uppercase }}
+                </span>
+              </td>
+              
+              <td class="text-end">
+                <button (click)="editarCurso(curso)" class="btn btn-sm btn-info me-2">
+                  ✏️ Editar
+                </button>
+                <button *appShowForRole="'administrador'" (click)="eliminarCurso(curso.id, curso.titulo)" class="btn btn-sm btn-danger">
+                  🗑️ Eliminar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <nav aria-label="Navegación de páginas">
+      <ul class="pagination justify-content-center">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" (click)="goToPage(currentPage - 1)">Anterior</a>
+        </li>
+
+        @for (pageNumber of [].constructor(totalPages); track $index) {
+          <li class="page-item" [class.active]="currentPage === $index + 1">
+            <a class="page-link" (click)="goToPage($index + 1)">{{ $index + 1 }}</a>
+          </li>
+        }
+
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <a class="page-link" (click)="goToPage(currentPage + 1)">Siguiente</a>
+        </li>
+      </ul>
+      <p class="text-center mt-2">Página {{ currentPage }} de {{ totalPages }}</p>
+    </nav>
+  }
+</div>
+
+===== FILE: cursos-page.scss =====
+/* ===== PALETA MILITAR ARENA–OLIVA ===== */
+$militar-oscuro: #3a3a33;      
+$militar-suave: #4a4a42;       
+$militar-borde: #2e2e28;       
+$militar-panel: #f2f2f0;       
+$militar-texto: #222222;       
+$militar-texto-suave: rgba(255,255,255,0.85);
+
+/* CONTENEDOR PRINCIPAL */
+.cursos-list-container {
+  background: transparent;
+  border: none;
+  padding: 2rem;
+  color: $militar-texto;
+}
+
+/* ===== CABECERA MILITAR ===== */
+.cursos-list-container > header {
+  background: linear-gradient(90deg, $militar-oscuro, $militar-suave);
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid $militar-borde;
+  color: #e6e6e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+  }
+
+  .btn-primary {
+    background-color: $militar-oscuro !important;
+    border-color: $militar-borde !important;
+    text-transform: uppercase;
+    font-weight: 600;
+
+    &:hover {
+      background-color: $militar-borde !important;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/* ===== TABLA MILITAR ===== */
+.table {
+  background: $militar-panel;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+
+  thead {
+    background: linear-gradient(180deg, $militar-oscuro, $militar-suave);
+    color: #e7e7e7;
+
+    th {
+      border-bottom: 2px solid $militar-borde;
+    }
+  }
+
+  tbody tr {
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(74, 74, 66, 0.15); // highlight oliva suave
+    }
+  }
+
+  td, th {
+    vertical-align: middle;
+  }
+}
+
+.cursos-list-container tbody tr {
+  background: #f8f8f7;
+  border-bottom: 1px solid $militar-borde;
+  transition: background 0.2s;
+}
+
+.cursos-list-container tbody tr:hover {
+  background: #ecece9;  // tono arena suave
+}
+
+/* Celdas */
+.cursos-list-container td,
+.cursos-list-container th {
+  padding: 0.75rem 1rem;
+}
+
+/* ============================== */
+/*    BOTONES DE ACCIÓN MILITAR   */
+/* ============================== */
+
+.btn-info {
+  background-color: #55665a !important;  // oliva metal oscuro
+  border-color: #55665a !important;
+  color: #fff !important;
+
+  &:hover {
+    background-color: #3f4c44 !important;
+    border-color: #3f4c44 !important;
+  }
+}
+
+.btn-danger {
+  background-color: #7b3f3f !important;  // rojo militar apagado
+  border-color: #7b3f3f !important;
+
+  &:hover {
+    background-color: #5d2e2e !important;
+    border-color: #5d2e2e !important;
+  }
+}
+
+/* ============================== */
+/*          BADGES MILITARES       */
+/* ============================== */
+
+.badge.bg-success {
+  background-color: #6b8f64 !important; 
+  color: #fff !important;
+}
+
+.badge.bg-warning {
+  background-color: #a3905b !important; 
+  color: #222 !important;
+}
+
+.badge.bg-secondary {
+  background-color: #666 !important;     
+  color: #eee !important;
+}
+
+/* ===== PAGINACIÓN ===== */
+.pagination .page-link {
+  background-color: $militar-panel;
+  border: 1px solid $militar-borde;
+  color: $militar-texto;
+
+  &:hover {
+    background-color: rgba(74, 74, 66, 0.2);
+  }
+}
+
+.page-item.active .page-link {
+  background-color: $militar-oscuro;
+  border-color: $militar-oscuro;
+  color: #fff;
+}
+
+===== FILE: cursos-page.ts =====
+// src/app/features/cursos/pages/cursos-page/cursos-page.component.ts
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Curso } from '../../../../core/models/curso.model';
+import { CursoService } from '../../../../core/services/curso.service';
+import { Subject, switchMap, catchError, of, merge } from 'rxjs';
+import { takeUntil, tap } from 'rxjs/operators';
+import { ShowForRoleDirective } from '../../../../shared/directives/show-for-role.directive'; // <-- 1. Importa la clase
+
+@Component({
+  selector: 'app-cursos-page',
+  standalone: true,
+  imports: [CommonModule, RouterModule, ShowForRoleDirective],
+  templateUrl: './cursos-page.html',
+  styleUrls: ['./cursos-page.scss']
+})
+export class CursosPage implements OnInit, OnDestroy {
+  cursos: Curso[] = [];
+  cargando = true;
+  error: string | null = null;
+
+  // Paginación (basado en el patrón de usuarios [cite: 1093])
+  currentPage = 1;
+  limit = 10;
+  totalPages = 1;
+
+  private cargarTrigger$ = new Subject<void>();
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private cursoService: CursoService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.initPaginacionListener();
+    this.cargarTrigger$.next();
+  }
+
+  initPaginacionListener(): void {
+    this.cargarTrigger$.pipe(
+      tap(() => this.cargando = true),
+      switchMap(() =>
+        this.cursoService.getCursosPaginados(this.currentPage, this.limit).pipe(
+          catchError(() => {
+            this.error = 'Error al cargar los cursos';
+            this.cargando = false;
+            return of({ data: [], total: 0 });
+          })
+        )
+      ),
+      takeUntil(this.destroy$)
+    )
+    .subscribe({
+      next: (res) => {
+        this.cursos = res.data;
+        this.totalPages = Math.ceil(res.total / this.limit);
+        this.cargando = false;
+        this.error = null;
+      },
+      error: () => {
+        this.error = "Error al cargar los cursos";
+        this.cargando = false;
+      }
+    });
+  }
+
+  cargarCursos(): void {
+    this.cargarTrigger$.next(); // Dispara la recarga
+  }
+
+  nuevoCurso(): void {
+    this.router.navigate(['/cursos/crear']);
+  }
+
+  editarCurso(curso: Curso): void {
+    this.router.navigate(['/cursos/editar', curso.id]);
+  }
+
+  eliminarCurso(id: number, titulo: string): void {
+    if (confirm(`¿Está seguro de que desea eliminar el curso "${titulo}" (ID: ${id})?`)) {
+      this.cursoService.deleteCurso(id)
+        .pipe(
+          tap(() => {
+            alert('Curso eliminado con éxito.');
+            this.cargarCursos();
+          }),
+          catchError((error) => {
+            console.error('Error al eliminar el curso:', error);
+            alert('Error al eliminar el curso.');
+            return of(null);
+          })
+        )
+        .subscribe();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.cargarCursos();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+}
+
+===== FILE: dashboard.routes.ts =====
+
+===== FILE: dashboard-page.component.html =====
+<div class="dashboard-wrapper">
+
+  <!-- ====== TARJETAS PRINCIPALES ====== -->
+  <section class="cards-grid">
+    <div class="card-militar">
+      <h3>Usuarios</h3>
+      <p class="value">{{ metrics.usuariosTotales }}</p>
+      <span class="sub">Activos: {{ metrics.usuariosActivos }}</span>
+    </div>
+
+    <div class="card-militar">
+      <h3>Cursos</h3>
+      <p class="value">{{ metrics.cursosActivos }}</p>
+      <span class="sub">Inactivos: {{ metrics.cursosInactivos }}</span>
+    </div>
+
+    <div class="card-militar">
+      <h3>Estudiantes</h3>
+      <p class="value">{{ metrics.estudiantesTotales }}</p>
+      <span class="sub">Nuevos hoy: {{ metrics.estudiantesHoy }}</span>
+    </div>
+
+    <div class="card-militar">
+      <h3>Inscripciones Activas</h3>
+      <p class="value">{{ metrics.inscripcionesActivas }}</p>
+      <span class="sub">Canceladas: {{ metrics.inscripcionesCanceladas }}</span>
+    </div>
+  </section>
+
+  <!-- ====== ACCIONES RÁPIDAS ====== -->
+  <section class="quick-actions">
+    <button class="btn-militar" *appShowForRole="'administrador'" (click)="go('/usuarios/crear')">➕ Crear Usuario</button>
+    <button class="btn-militar" *appShowForRole= "['administrador', 'instructor']" (click)="go('/cursos/crear')">➕ Crear Curso</button>
+    <button class="btn-militar" *appShowForRole= "['administrador', 'instructor']" (click)="go('/inscripciones/crear')">➕ Nueva Inscripción</button>
+    <button class="btn-militar" *appShowForRole= "['administrador', 'instructor']" (click)="go('/reportes')">📄 Ver Reporte</button>
+  </section>
+
+  <!-- ====== ÚLTIMOS MOVIMIENTOS ====== -->
+  <section class="last-activity">
+    <h3>Últimas Inscripciones</h3>
+    <ul>
+      <li *ngFor="let item of actividadReciente">
+        <span class="strong">{{ item.estudiante }}</span> se inscribió en 
+        <span class="strong">{{ item.curso }}</span>
+        <small>{{ datePipe.transform(item.fecha, 'short') }}</small>
+      </li>
+    </ul>
+  </section>
+
+</div>
+
+===== FILE: dashboard-page.component.scss =====
+/* ===== PALETA MILITAR ===== */
+$militar-oscuro: #3a3a33;
+$militar-suave: #4a4a42;
+$militar-borde: #2e2e28;
+$militar-panel: #f2f2f0;
+$militar-texto: #222;
+$militar-texto-suave: rgba(255,255,255,0.85);
+
+.dashboard-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ====== TARJETAS ====== */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.card-militar {
+  background: linear-gradient(145deg, $militar-oscuro, $militar-suave);
+  border: 1px solid $militar-borde;
+  border-radius: 10px;
+  padding: 1.5rem;
+  color: $militar-texto-suave;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+
+  h3 {
+    margin: 0 0 .5rem;
+  }
+
+  .value {
+    font-size: 2.4rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+  }
+
+  .sub {
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+}
+
+/* ====== ACCIONES RÁPIDAS ====== */
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.btn-militar {
+  background: $militar-oscuro;
+  border: 1px solid $militar-borde;
+  padding: 0.7rem 1.2rem;
+  border-radius: 6px;
+  color: #fff;
+  transition: 0.2s ease-in-out;
+
+  &:hover {
+    background: $militar-borde;
+    transform: translateY(-2px);
+  }
+}
+
+/* ====== LISTA DE ACTIVIDAD ====== */
+.last-activity {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(0,0,0,0.2);
+  padding: 1.5rem;
+  border-radius: 8px;
+
+  h3 {
+    margin-bottom: 1rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+
+    li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+
+      .strong {
+        font-weight: bold;
+        color: $militar-oscuro;
+      }
+
+      small {
+        float: right;
+        opacity: 0.7;
+      }
+    }
+  }
+}
+
+
+
+// /* Fondo general del dashboard */
+// .dashboard-container {
+//   background-color: #C2B280; /* Arena militar apagada */
+//   border-radius: 12px;
+// }
+
+// /* Títulos del dashboard */
+// .dashboard-container h1,
+// .dashboard-container h2 {
+//   color: #1E1E1E; /* Negro petróleo */
+//   font-weight: 700;
+//   letter-spacing: 1px;
+// }
+
+// /* Cards estilo militar */
+// .card {
+//   background-color: #6B6F52; /* Verde oliva apagado */
+//   border: none;
+//   border-radius: 10px;
+//   box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+//   color: #F2F2F2;
+// }
+
+// /* Bandas laterales militares (en reemplazo de las azul/verde vivas) */
+// .card-primary {
+//   border-left: 6px solid #4F5134; /* Oliva oscuro */
+// }
+
+// .card-success {
+//   border-left: 6px solid #3C3D29; /* Oliva aún más profundo */
+// }
+
+// /* Icono dentro de circulito estilo metal apagado */
+// .icon-circle {
+//   background-color: rgba(30, 30, 30, 0.15); /* Gris metal ligero */
+//   color: #EAEAEA;
+//   font-size: 2rem;
+//   padding: 0.6rem;
+//   border-radius: 50%;
+// }
+
+// /* Texto dentro de las cards */
+// .card-title {
+//   color: #E0E0E0;
+//   font-weight: 600;
+//   letter-spacing: 0.5px;
+// }
+
+// .card-text {
+//   color: #FFFFFF;
+//   font-size: 1.8rem;
+//   font-weight: bold;
+// }
+
+// /* Caja de estadísticas adicionales */
+// .alert-light {
+//   background-color: rgba(111, 113, 92, 0.2);
+//   color: #1E1E1E;
+//   border: 1px solid #4F5134;
+// }
+
+===== FILE: dashboard-page.component.ts =====
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { DashboardService } from '../../../../core/services/dashboard.service';
+import { CommonModule, DatePipe } from '@angular/common';
+import { ShowForRoleDirective } from '../../../../shared/directives/show-for-role.directive'; // <-- 1. Importa la clase
+
+@Component({
+  selector: 'app-dashboard-page',
+  standalone: true,
+  imports: [CommonModule, ShowForRoleDirective], // necesario para *ngFor y pipes
+  templateUrl: './dashboard-page.component.html',
+  styleUrls: ['./dashboard-page.component.scss'], // corregido de styleUrl
+  providers: [DatePipe] // inyectamos DatePipe
+})
+export class DashboardPage implements OnInit {
+  metrics: any = {};
+  actividadReciente: any[] = [];
+
+  constructor(
+    private dash: DashboardService,
+    private router: Router,
+    public datePipe: DatePipe // inyectado correctamente
+  ) {}
+
+  ngOnInit() {
+    this.dash.obtenerMétricas().subscribe(data => {
+      this.metrics = data;
+      this.actividadReciente = data.actividadReciente;
+    });
+  }
+
+  go(ruta: string) {
+    this.router.navigate([ruta]);
+  }
+}
+
+===== FILE: estudiantes.routes.ts =====
+// src/app/features/estudiantes/estudiantes.routes.ts
+import { Routes } from '@angular/router';
+import { ESTUDIANTES_PAGE } from './pages/estudiantes-page/estudiantes-page.component';
+
+export const ESTUDIANTES_ROUTES: Routes = [
+  {
+    path: '',
+    loadComponent: () => ESTUDIANTES_PAGE,
+    pathMatch: 'full'
+  }
+];
+
+===== FILE: catalogo-cursos-page.component.html =====
+<div class="card-body p-2">
+  <div class="Catálogo-container">
+    <header class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Catálogo de Cursos Disponibles</h2>
+    </header>
+
+<div class="catalogo-scroll">
+  <div class="catalogo-grid">
+    @for (curso of cursos; track curso.id) {
+
+      <div class="curso-item">
+        <div class="card h-100">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">{{ curso.titulo }}</h5>
+
+            <p class="card-text flex-grow-1">
+              {{ curso.descripcion }}
+            </p>
+
+            <button (click)="inscribirse(curso)"
+                    class="btn btn-militar mt-auto"
+                    [disabled]="estaInscrito(curso.id)">
+              <i class="bi bi-check-circle me-2"></i>
+              {{ estaInscrito(curso.id) ? 'Ya Inscrito' : 'Inscribirse Ahora' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+    }
+  </div>
+</div>
+
+
+</div>
+</div>
+
+
+===== FILE: catalogo-cursos-page.component.scss =====
+/* ===== PALETA MILITAR ARENA–OLIVA ===== */
+$militar-oscuro: #3a3a33;      
+$militar-suave: #4a4a42;       
+$militar-borde: #2e2e28;       
+$militar-panel: #f2f2f0;       
+$militar-texto: #222222;       
+$militar-texto-suave: rgba(255,255,255,0.85);
+
+
+
+/* CONTENEDOR PRINCIPAL */
+.Catálogo-container {
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;     
+  overflow-x: hidden;
+  padding: 2rem;
+}
+
+/* Scroll bonito (opcional) */
+.Catálogo-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.Catálogo-container::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+
+/* ===== CABECERA MILITAR ===== */
+.Catálogo-container > header {
+  background: linear-gradient(90deg, $militar-oscuro, $militar-suave);
+  padding: 1rem 1.0rem;
+  border-radius: 6px;
+  border: 1px solid $militar-borde;
+  color: #e6e6e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+  }
+}
+
+.Catálogo-container, 
+.p-4 {
+  height: 25%;
+  max-height: 50%;
+  overflow: hidden;   // evita que el contenido empuje hacia afuera
+}
+
+.cards-wrapper {
+  height: 65vh;    // antes max-height
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.cards-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cards-wrapper::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+
+.catalogo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.curso-item {
+  width: 100%;
+  min-width: 0;
+}
+
+.catalogo-scroll {
+  height: 100%;
+  max-height: calc(100vh - 160px); /* ajusta si tu header es más alto */
+  overflow-y: auto;
+  padding-right: 8px; /* evita que el scroll tape contenido */
+}
+
+.catalogo-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.catalogo-scroll::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+/* ============================== */
+/*    BOTONES DE ACCIÓN MILITAR   */
+/* ============================== */
+
+.btn-info {
+  background-color: #55665a !important;  // oliva metal oscuro
+  border-color: #55665a !important;
+  color: #fff !important;
+
+  &:hover {
+    background-color: #3f4c44 !important;
+    border-color: #3f4c44 !important;
+  }
+}
+
+.btn-danger {
+  background-color: #7b3f3f !important;  // rojo militar apagado
+  border-color: #7b3f3f !important;
+
+  &:hover {
+    background-color: #5d2e2e !important;
+    border-color: #5d2e2e !important;
+  }
+}
+
+
+===== FILE: catalogo-cursos-page.component.ts =====
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { CursoService } from '../../../../core/services/curso.service';
+import { Curso } from '../../../../core/models/curso.model';
+import { AuthService } from '../../../../core/auth/services/auth.service';
+import { InscripcionService, InscripcionRegistro } from '../../../../core/services/inscripcion.service';
+import { catchError, map, of, switchMap, tap } from 'rxjs';
+// import { RouterLink } from '@angular/router'; // Para el enlace en el HTML
+
+@Component({
+  selector: 'app-catalogo-cursos-page',
+  standalone: true,
+  imports: [CommonModule],
+//   imports: [CommonModule, RouterLink],
+  templateUrl: './catalogo-cursos-page.component.html',
+  styleUrls: ['./catalogo-cursos-page.component.scss']
+})
+export class CatalogoCursosPage implements OnInit {
+  cursos: Curso[] = [];
+  inscripcionesIds: number[] = []; // IDs de los cursos en los que ya está inscrito
+  estudianteId: number | null = null;
+  isLoading = true;
+
+  constructor(
+    private cursoService: CursoService,
+    private inscripcionService: InscripcionService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    const user = this.authService.getCurrentUser();
+    if (user && user.rol === 'estudiante') {
+      this.estudianteId = user.id;
+      this.cargarDatos();
+    } else {
+      this.isLoading = false;
+    }
+  }
+
+  cargarDatos(): void {
+    this.isLoading = true;
+    this.cursoService.getCatalogoCursos().pipe(
+      tap(cursos => this.cursos = cursos),
+      switchMap(() => {
+        if (this.estudianteId) {
+          // Cargar inscripciones del estudiante para deshabilitar el botón
+          return this.inscripcionService.getInscripcionesByEstudianteId(this.estudianteId).pipe(
+            map(inscripciones => inscripciones.map(i => i.curso_id)) // Solo necesitamos los IDs
+          );
+        }
+        return of([]);
+      }),
+      tap(inscripcionesIds => {
+        this.inscripcionesIds = inscripcionesIds;
+        this.isLoading = false;
+      }),
+      catchError(err => {
+        console.error('Error al cargar catálogo o inscripciones:', err);
+        alert('Error al cargar los datos. Revisa la consola.');
+        this.isLoading = false;
+        return of([]);
+      })
+    ).subscribe();
+  }
+
+  estaInscrito(cursoId: number): boolean {
+    return this.inscripcionesIds.includes(cursoId);
+  }
+
+  inscribirse(curso: Curso): void {
+    if (!this.estudianteId || this.estaInscrito(curso.id)) {
+      alert('Ya estás inscrito en este curso o no se pudo obtener tu ID.');
+      return;
+    }
+
+    if (confirm(`¿Estás seguro de inscribirte en el curso: ${curso.titulo}?`)) {
+      const payload: InscripcionRegistro = {
+        estudiante_id: this.estudianteId,
+        curso_id: curso.id,
+      };
+
+      this.inscripcionService.crearInscripcion(payload).pipe(
+        tap(() => {
+          alert(`Inscripción exitosa al curso: ${curso.titulo}`);
+          this.cargarDatos(); // Recargar para actualizar el estado del botón
+        }),
+        catchError(err => {
+          console.error('Error al inscribirse:', err);
+          alert('Error al intentar inscribirse. Podría ser una inscripción duplicada.');
+          return of(null);
+        })
+      ).subscribe();
+    }
+  }
+}
+
+===== FILE: estudiantes-page.component.html =====
+<!-- src/app/features/estudiantes/pages/estudiantes-page/estudiantes-page.component.html -->
+<div class="container my-4">
+  <h2>Mis Estudiantes</h2>
+
+  @if (cargando) {
+    <div class="alert alert-info">Cargando estudiantes...</div>
+  } @else if (estudiantes.length === 0) {
+    <div class="alert alert-warning">No hay estudiantes registrados.</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Usuario</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of estudiantes; track e.id) {
+            <tr>
+              <td>{{ e.id }}</td>
+              <td>{{ e.nombre }}</td>
+              <td>{{ e.email }}</td>
+              <td>{{ e.username }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+===== FILE: estudiantes-page.component.scss =====
+
+===== FILE: estudiantes-page.component.ts =====
+// src/app/features/estudiantes/pages/estudiantes-page/estudiantes-page.component.ts
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { UsuarioService } from '../../../../core/services/usuario.service';
+import { Usuario } from '../../../../core/models/usuario.model';
+
+@Component({
+  selector: 'app-estudiantes-page',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './estudiantes-page.component.html',
+  styleUrls: ['./estudiantes-page.component.scss']
+})
+export class ESTUDIANTES_PAGE implements OnInit {
+  estudiantes: Usuario[] = [];
+  cargando = true;
+
+  constructor(private usuarioService: UsuarioService) {}
+
+  ngOnInit() {
+    this.cargarEstudiantes();
+  }
+
+  cargarEstudiantes(): void {
+    this.usuarioService.getUsuarios().subscribe({
+      next: (usuarios) => {
+        // Filtrar solo los usuarios con rol 'estudiante'
+        this.estudiantes = usuarios.filter(u => u.rol === 'estudiante');
+        this.cargando = false;
+      },
+      error: () => {
+        this.cargando = false;
+      }
+    });
+  }
+}
+
+===== FILE: mis-inscripciones-page.component.html =====
+<div class="mis-inscripciones-container p-4">
+  <header class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Mis Cursos Inscritos</h2>
+    <!-- <button (click)="nuevoCurso()" class="btn btn-primary">
+      ➕ Nuevo Curso
+    </button> -->
+  </header>
+
+  @if (isLoading) {
+    <div class="alert alert-info">Cargando tus inscripciones...</div>
+  } @else if (inscripciones.length === 0) {
+    <div class="alert alert-warning">No tienes cursos inscritos actualmente. ¡Explora el <a routerLink="/catalogo">Catálogo de Cursos</a>!</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>ID Inscripción</th>
+            <th>Curso</th>
+            <th>Fecha Inscripción</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (inscripcion of inscripciones; track inscripcion.id) {
+            <tr>
+              <td>{{ inscripcion.id }}</td>
+              <td>{{ inscripcion.curso_titulo }}</td> 
+              <td>{{ inscripcion.fecha_inscripcion | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                <span class="badge text-black" [ngClass]="{ 
+                  'bg-success': inscripcion.estado === 'activo', 
+                  'bg-info': inscripcion.estado === 'completado', 
+                  'bg-danger': inscripcion.estado === 'cancelado' 
+                }">
+                  {{ inscripcion.estado | uppercase }}
+                </span>
+              </td>
+              <td>
+                <button 
+                  (click)="cancelarInscripcion(inscripcion)" 
+                  class="btn btn-sm btn-outline-danger" 
+                  [disabled]="inscripcion.estado !== 'activo'"
+                >
+                  <i class="bi bi-x-circle-fill"></i> 
+                  Cancelar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+===== FILE: mis-inscripciones-page.component.scss =====
+/* ===== PALETA MILITAR ARENA–OLIVA ===== */
+$militar-oscuro: #3a3a33;      
+$militar-suave: #4a4a42;       
+$militar-borde: #2e2e28;       
+$militar-panel: #f2f2f0;       
+$militar-texto: #222222;       
+$militar-texto-suave: rgba(255,255,255,0.85);
+
+/* CONTENEDOR PRINCIPAL */
+.mis-inscripciones-container {
+  background: transparent;
+  border: none;
+  padding: 2rem;
+  color: $militar-texto;
+}
+
+/* ===== CABECERA MILITAR ===== */
+.mis-inscripciones-container > header {
+  background: linear-gradient(90deg, $militar-oscuro, $militar-suave);
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid $militar-borde;
+  color: #e6e6e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 {
+    margin: 0;
+  }
+
+  .btn-primary {
+    background-color: $militar-oscuro !important;
+    border-color: $militar-borde !important;
+    text-transform: uppercase;
+    font-weight: 600;
+
+    &:hover {
+      background-color: $militar-borde !important;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/* ===== TABLA MILITAR ===== */
+.table {
+  background: $militar-panel;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+
+  thead {
+    background: linear-gradient(180deg, $militar-oscuro, $militar-suave);
+    color: #e7e7e7;
+
+    th {
+      border-bottom: 2px solid $militar-borde;
+    }
+  }
+
+  tbody tr {
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(74, 74, 66, 0.15); // highlight oliva suave
+    }
+  }
+
+  td, th {
+    vertical-align: middle;
+  }
+}
+
+.cursos-list-container tbody tr {
+  background: #f8f8f7;
+  border-bottom: 1px solid $militar-borde;
+  transition: background 0.2s;
+}
+
+.cursos-list-container tbody tr:hover {
+  background: #ecece9;  // tono arena suave
+}
+
+/* Celdas */
+.cursos-list-container td,
+.cursos-list-container th {
+  padding: 0.75rem 1rem;
+}
+
+/* ============================== */
+/*    BOTONES DE ACCIÓN MILITAR   */
+/* ============================== */
+
+.btn-info {
+  background-color: #55665a !important;  // oliva metal oscuro
+  border-color: #55665a !important;
+  color: #fff !important;
+
+  &:hover {
+    background-color: #3f4c44 !important;
+    border-color: #3f4c44 !important;
+  }
+}
+
+.btn-danger {
+  background-color: #7b3f3f !important;  // rojo militar apagado
+  border-color: #7b3f3f !important;
+
+  &:hover {
+    background-color: #5d2e2e !important;
+    border-color: #5d2e2e !important;
+  }
+}
+
+/* ============================== */
+/*          BADGES MILITARES       */
+/* ============================== */
+
+.badge.bg-success {
+  background-color: #6b8f64 !important; 
+  color: #fff !important;
+}
+
+.badge.bg-warning {
+  background-color: #a3905b !important; 
+  color: #222 !important;
+}
+
+.badge.bg-secondary {
+  background-color: #666 !important;     
+  color: #eee !important;
+}
+
+/* ===== PAGINACIÓN ===== */
+.pagination .page-link {
+  background-color: $militar-panel;
+  border: 1px solid $militar-borde;
+  color: $militar-texto;
+
+  &:hover {
+    background-color: rgba(74, 74, 66, 0.2);
+  }
+}
+
+.page-item.active .page-link {
+  background-color: $militar-oscuro;
+  border-color: $militar-oscuro;
+  color: #fff;
+}
+
+===== FILE: mis-inscripciones-page.component.ts =====
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { InscripcionService, Inscripcion } from '../../../../core/services/inscripcion.service';
+import { AuthService } from '../../../../core/auth/services/auth.service';
+import { catchError, of, tap } from 'rxjs';
+import { Router, RouterLink } from '@angular/router';
+
+@Component({
+  selector: 'app-mis-inscripciones-page',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  templateUrl: './mis-inscripciones-page.component.html',
+  styleUrls: ['./mis-inscripciones-page.component.scss']
+})
+export class MisInscripcionesPage implements OnInit {
+  inscripciones: Inscripcion[] = [];
+  isLoading = true;
+  estudianteId: number | null = null;
+
+  constructor(
+    private inscripcionService: InscripcionService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    const user = this.authService.getCurrentUser();
+    // Obtener el ID y el rol del usuario actual
+    if (user && user.rol === 'estudiante') { 
+      this.estudianteId = user.id;
+      this.cargarInscripciones();
+    } else {
+      this.router.navigate(['/dashboard']); 
+    }
+  }
+
+  cargarInscripciones(): void {
+    if (!this.estudianteId) {
+      this.isLoading = false;
+      return;
+    }
+
+    this.isLoading = true;
+    this.inscripcionService.getInscripcionesByEstudianteId(this.estudianteId).pipe(
+      tap(data => {
+        // Asumiendo que el backend proporciona 'curso_titulo'
+        this.inscripciones = data; 
+        this.isLoading = false;
+      }),
+      catchError(err => {
+        console.error('Error al cargar mis inscripciones:', err);
+        alert('Error al cargar tus cursos inscritos. Revisa la consola.');
+        this.isLoading = false;
+        return of([]);
+      })
+    ).subscribe();
+  }
+
+  cancelarInscripcion(inscripcion: Inscripcion): void {
+    if (inscripcion.estado !== 'activo') {
+      alert('Solo se pueden cancelar inscripciones activas.');
+      return;
+    }
+
+    if (confirm(`¿Deseas cancelar tu inscripción al curso: ${inscripcion.curso_titulo}?`)) {
+      // Usa el método de actualizar estado del servicio para cambiar a 'cancelado'
+      this.inscripcionService.actualizarEstado(inscripcion.id, 'cancelado').pipe(
+        tap(() => {
+          alert(`Inscripción al curso ${inscripcion.curso_titulo} cancelada con éxito.`);
+          this.cargarInscripciones(); // Recargar la lista
+        }),
+        catchError(err => {
+          console.error('Error al cancelar inscripción:', err);
+          alert('Error al cancelar la inscripción.');
+          return of(null);
+        })
+      ).subscribe();
+    }
+  }
+}
+
+===== FILE: inscripciones.routes.ts =====
+import { Routes } from '@angular/router';
+
+export const INSCRIPCIONES_ROUTES: Routes = [
+  {
+    path: '',
+    loadComponent: () =>
+      import('./pages/inscripciones-page/inscripciones-page')
+        .then(m => m.InscripcionesPage)
+  },
+  {
+    path: 'crear',
+    loadComponent: () =>
+      import('./pages/inscripciones-create-page/inscripciones-create-page')
+        .then(m => m.InscripcionesCreatePage)
+  }
+];
+
+===== FILE: inscripciones-create-page.html =====
+<h3>Registrar Nueva Inscripción</h3>
+
+<form [formGroup]="form" (ngSubmit)="guardar()" class="p-3 border rounded">
+
+  <div class="mb-3">
+    <label>Estudiante</label>
+    <select class="form-control" formControlName="estudiante_id">
+      <option [ngValue]="null">Seleccione...</option>
+      <option *ngFor="let e of estudiantes" [ngValue]="e.id">
+        {{ e.nombre }} ({{ e.email }})
+      </option>
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label>Curso</label>
+    <select class="form-control" formControlName="curso_id">
+      <option [ngValue]="null">Seleccione...</option>
+      <option *ngFor="let c of cursos" [ngValue]="c.id">
+        {{ c.titulo }}
+      </option>
+    </select>
+  </div>
+
+  <div class="form-actions mt-4 d-flex gap-2 align-items-center">
+  <button class="btn btn-primary" type="submit" [disabled]="form.invalid">
+    Guardar Inscripción
+  </button>
+  <app-cancel-button navigateTo="/inscripciones"></app-cancel-button>
+</div>
+
+</form>
+
+===== FILE: inscripciones-create-page.scss =====
+
+===== FILE: inscripciones-create-page.ts =====
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators, FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
+import { UsuarioService } from '../../../../core/services/usuario.service';
+import { CursoService } from '../../../../core/services/curso.service';
+import { InscripcionService } from '../../../../core/services/inscripcion.service';
+import { CancelButtonComponent } from "../../../../shared/components/cancel-button/cancel-button.component";
+
+@Component({
+  selector: 'app-inscripciones-create-page',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, CancelButtonComponent],
+  templateUrl: './inscripciones-create-page.html'
+})
+export class InscripcionesCreatePage implements OnInit {
+
+  form!: FormGroup; // se inicializa en el constructor
+  estudiantes: any[] = [];
+  cursos: any[] = [];
+
+  constructor(
+    private fb: FormBuilder,
+    private usuarioService: UsuarioService,
+    private cursoService: CursoService,
+    private inscripcionService: InscripcionService,
+    private router: Router
+  ) {
+    // Inicializamos el form aquí, después de inyectar fb
+    this.form = this.fb.group({
+      estudiante_id: [null, Validators.required],
+      curso_id: [null, Validators.required]
+    });
+  }
+
+  ngOnInit() {
+    this.usuarioService.getUsuarios().subscribe(res => {
+      this.estudiantes = res.filter(x => x.rol === 'estudiante');
+    });
+
+    this.cursoService.getCursosPaginados(1, 500).subscribe(res => this.cursos = res.data);
+  }
+
+  guardar() {
+    if (this.form.invalid) return;
+
+    this.inscripcionService.crearInscripcion(this.form.value)
+      .subscribe({
+        next: () => this.router.navigate(['/inscripciones']),
+        error: err => alert('Error: ' + (err.error?.message ?? 'Error inesperado'))
+      });
+  }
+}
+
+===== FILE: inscripciones-page.html =====
+<div class="inscripciones-list-container p-4">
+  <header class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Listado de Inscripciones</h2>
+    <button (click)="crear()" class="btn btn-primary">
+      ➕ Nueva Inscripción
+    </button>
+  </header>
+
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Estudiante</th>
+        <th>Curso</th>
+        <th>Fecha</th>
+        <th class="text-end">Acciones / Modificar Estado</th> </tr>
+    </thead>
+
+    <tbody>
+      @for (ins of inscripciones; track ins.id) {
+        <tr>
+          <td>{{ ins.id }}</td>
+          <td>{{ ins.estudiante_nombre }}</td>
+          <td>{{ ins.curso_titulo }}</td>
+          <td>{{ ins.fecha_inscripcion | date:'short' }}</td>
+          
+          <td class="text-end">
+            <select
+              [ngModel]="ins.estado"
+              (ngModelChange)="onEstadoChange(ins.id, $event)"
+              class="form-select form-select-sm d-inline-block w-auto me-2" 
+              [disabled]="cargando"
+              style="min-width: 120px;" 
+            >
+              @for (estado of estadosPosibles; track estado) {
+                <option [value]="estado">{{ estado | titlecase }}</option>
+              }
+            </select>
+
+            <button class="btn btn-danger btn-sm" (click)="eliminar(ins.id)" [disabled]="cargando">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="text-center">No hay inscripciones registradas.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (cargando) {
+      <div class="text-center my-3">Cargando datos...</div>
+  }
+</div>
+
+===== FILE: inscripciones-page.scss =====
+/* ===== PALETA MILITAR ===== */
+$militar-oscuro: #3a3a33;
+$militar-suave: #4a4a42;
+$militar-borde: #2e2e28;
+$militar-texto: #222222;
+$militar-texto-suave: rgba(255,255,255,0.85);
+$militar-panel: #f2f2f0;       // arena muy suave para fondos
+
+/* ===== CABECERA ===== */
+header {
+  background: linear-gradient(90deg, $militar-oscuro, $militar-suave);
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid $militar-borde;
+  color: #f1f1f1;
+
+  h2 {
+    margin: 0;
+  }
+
+  .btn-primary {
+    background-color: $militar-oscuro !important;
+    border-color: $militar-oscuro !important;
+
+    &:hover {
+      background-color: $militar-borde !important;
+      border-color: $militar-borde !important;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/* ===== TABLA MILITAR ===== */
+.table {
+  background: $militar-panel;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+
+  thead {
+    background: linear-gradient(180deg, $militar-oscuro, $militar-suave);
+    color: #e7e7e7;
+
+    th {
+      border-bottom: 2px solid $militar-borde;
+    }
+  }
+
+  tbody tr {
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(74, 74, 66, 0.15); // highlight oliva suave
+    }
+  }
+
+  td, th {
+    vertical-align: middle;
+  }
+}
+
+
+/* ============================ */
+/*         BADGES               */
+/* ============================ */
+.badge.bg-success {
+  background-color: #6b8f64 !important;   /* Activo */
+  color: #fff !important;
+}
+
+.badge.bg-secondary {
+  background-color: #6c757d55 !important; /* Completado */
+  color: #eee !important;
+}
+
+.badge.bg-danger {
+  background-color: #7a3b3b !important;   /* Cancelado */
+  color: #fff !important;
+}
+
+
+/* ============================ */
+/*   BOTONES DE ACCIÓN          */
+/* ============================ */
+.btn-danger.btn-sm {
+  background-color: #7a3b3b !important;
+  border: none !important;
+  color: #fff !important;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    background-color: #612e2e !important;
+    transform: translateY(-2px);
+  }
+}
+
+.text-end button {
+  min-width: 85px;
+  text-align: center;
+}
+
+===== FILE: inscripciones-page.ts =====
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+// 🔑 IMPORTACIÓN CLAVE AÑADIDA
+import { FormsModule } from '@angular/forms'; 
+import { InscripcionService, Inscripcion } from '../../../../core/services/inscripcion.service';
+
+@Component({
+  selector: 'app-inscripciones-page',
+  standalone: true,
+  // 🔑 AGREGADO: FormsModule para que ngModel funcione en el select
+  imports: [CommonModule, FormsModule], 
+  templateUrl: './inscripciones-page.html',
+  styleUrls: ['./inscripciones-page.scss']
+})
+export class InscripcionesPage implements OnInit {
+
+  inscripciones: Inscripcion[] = [];
+  total = 0;
+
+  page = 1;
+  limit = 10;
+  cargando = false;
+  
+  // PROPIEDAD: Define los estados posibles para usar en el HTML
+  readonly estadosPosibles: Inscripcion['estado'][] = ['activo', 'completado', 'cancelado'];
+
+  constructor(
+    private inscripcionService: InscripcionService,
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.cargarInscripciones();
+  }
+
+  cargarInscripciones() {
+    this.cargando = true;
+    this.inscripcionService.getInscripcionesPaginadas(this.page, this.limit)
+      .subscribe({
+        next: res => {
+          this.inscripciones = res.data;
+          this.total = res.total;
+          this.cargando = false;
+        },
+        error: () => this.cargando = false
+      });
+  }
+
+  crear() {
+    this.router.navigate(['/inscripciones/crear']);
+  }
+
+  editar(id: number) {
+    this.router.navigate(['/inscripciones/editar', id]); 
+  }
+  
+  onEstadoChange(id: number, nuevoEstado: Inscripcion['estado']) {
+    this.cargando = true;
+
+    this.inscripcionService.actualizarEstado(id, nuevoEstado)
+      .subscribe({
+        next: () => {
+          this.cargarInscripciones(); 
+        },
+        error: (err) => {
+          console.error('Error al actualizar estado:', err);
+          this.cargarInscripciones(); 
+        }
+      });
+  }
+
+  eliminar(id: number) {
+    if (!confirm('¿Seguro que deseas eliminar esta inscripción?')) return;
+
+    this.inscripcionService.eliminarInscripcion(id)
+      .subscribe(() => this.cargarInscripciones());
+  }
+}
+
+===== FILE: login.routes.ts =====
+// login.routes.ts
+import { Routes } from '@angular/router';
+import { LoginPageComponent } from './pages/login-page/login-page';
+
+export const loginRoutes: Routes = [
+  { path: '', component: LoginPageComponent }
+];
+
+===== FILE: login-form.html =====
+<div class="login-page-wrapper">
+  <div class="login-card shadow-lg military-card">
+
+      <!-- CABECERA MILITAR -->
+      <div class="military-header text-center mb-4">
+          <h3 class="fw-bold text-white mb-1">INICIO DE SESIÓN</h3>
+          <small class="text-light opacity-75">Accede a tu cuenta</small>
+      </div>
+
+      <form (ngSubmit)="submit()" #loginForm="ngForm">
+
+          <div class="mb-3 input-group-icon">
+              <i class="bi bi-person input-icon"></i> 
+              <input
+                  type="text"
+                  class="form-control form-control-clean"
+                  id="username"
+                  name="username"
+                  [(ngModel)]="credentials.username"
+                  placeholder="Usuario o Correo Electrónico"
+                  required
+                  #username="ngModel"
+              />
+              @if (username.invalid && username.touched) {
+                  <div class="text-danger small mt-1">El usuario es obligatorio</div>
+              }
+          </div>
+
+          <div class="mb-4 input-group-icon">
+              <i class="bi bi-lock input-icon"></i>
+              <input
+                  type="password"
+                  class="form-control form-control-clean"
+                  id="password"
+                  name="password"
+                  [(ngModel)]="credentials.password"
+                  placeholder="Contraseña"
+                  required
+                  #password="ngModel"
+              />
+              @if (password.invalid && password.touched) {
+                  <div class="text-danger small mt-1">La contraseña es obligatoria</div>
+              }
+          </div>
+
+          <button
+              type="submit"
+              class="btn btn-military w-100 mb-3"
+              [disabled]="loginForm.invalid"
+          >
+              ACCEDER
+          </button>
+
+          <!-- <div class="d-flex justify-content-between small mt-2">
+              <a href="#" class="text-decoration-none text-secondary-emphasis">Olvidé mi contraseña</a>
+              <a routerLink="/register" class="text-decoration-none text-secondary-emphasis">Crear una cuenta</a>
+          </div> -->
+
+      </form>
+  </div>
+</div>
+
+===== FILE: login-form.scss =====
+/* Fondo general */
+.login-page-wrapper {
+  // height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.military-card {
+  width: 100%;
+  max-width: 430px;
+  padding: 2.5rem;
+  border-radius: 16px;
+
+  /* SIN bordes */
+  border: none !important;
+
+  /* SIN sombras */
+  box-shadow: none !important;
+
+  /* Fondo transparente para que no parezca una card */
+  background: transparent !important;
+
+  position: relative;
+  overflow: hidden;
+
+  /* Elimina tramado si no quieres ningún borde fantasma */
+  &::before {
+    display: none !important;
+  }
+}
+
+/* Cabecera Militar */
+.military-header {
+  background: linear-gradient(180deg, #3d4b40, #2b352e);
+  padding: 1.4rem 1rem;
+  border-radius: 12px;
+  margin-top: -1rem;
+
+  /* Brillo verde tenue */
+  box-shadow: inset 0 0 12px rgba(133, 221, 162, 0.25);
+}
+
+/* Iconos dentro de inputs */
+.input-group-icon {
+  position: relative;
+
+  .input-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    color: #3e5945;
+  }
+
+  input {
+    padding-left: 42px;
+    border-radius: 10px;
+  }
+}
+
+/* Botón Militar */
+.btn-military {
+  background: #4a5c4e;
+  border: none;
+  color: white;
+  font-weight: bold;
+  padding: 0.75rem;
+  border-radius: 10px;
+  transition: 0.25s ease;
+
+  &:hover {
+    background: #3e4d42;
+    box-shadow: 0 0 10px rgba(133,221,162,0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+}
+
+===== FILE: login-form.ts =====
+// src/app/features/login/components/login-form/login-form.component.ts
+import { CommonModule } from '@angular/common';
+import { Component, EventEmitter, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+// import { RouterModule } from '@angular/router'; // ← Añade esta línea
+
+@Component({
+  selector: 'app-login-form',
+  standalone: true,
+  imports: [FormsModule, CommonModule],
+  templateUrl: './login-form.html',
+  styleUrls: ['./login-form.scss']
+})
+export class LoginFormComponent {
+  @Output()
+  login = new EventEmitter<{ username: string; password: string }>();
+
+  credentials = {
+    username: '',
+    password: ''
+  };
+
+  submit() {
+    this.login.emit(this.credentials);
+  }
+}
+
+===== FILE: login-page.html =====
+<div class="login-wrapper d-flex justify-content-center align-items-center">
+  <div class="login-card-split d-flex flex-column flex-lg-row shadow-lg">
+    
+    <!-- LADO IZQUIERDO (Branding/Imagen) -->
+    <div class="panel-brand d-none d-lg-flex flex-column justify-content-center align-items-center p-4">
+      <h2 class="text-white fw-bold text-center mb-3">Bienvenido a IE RUNNERS</h2>
+      <p class="text-white-50 text-center">Tu aprendizaje empieza aquí. Inicia sesión para continuar.</p>
+    </div>
+    
+    <!-- LADO DERECHO (Formulario) -->
+    <div class="panel-form p-5 d-flex flex-column justify-content-center">
+      <app-login-form (login)="onLogin($event)" #loginForm></app-login-form>
+
+          <div class="d-flex justify-content-between small mt-2">
+            <a href="#" 
+              class="text-decoration-none text-secondary-emphasis login-link-lg">
+              Olvidé mi contraseña
+            </a>
+
+            <a routerLink="/register" 
+              class="tfw-blod text-success text-decoration-none login-link-lg">
+              Crear una cuenta
+            </a>
+          </div>
+      <p class="text-center text-muted small mt-4"> &copy; 2025 Academia Digital </p> 
+    </div>
+
+  </div>
+</div>
+
+===== FILE: login-page.scss =====
+/* ======================= */
+/*  PALETA MILITAR GLOBAL  */
+/* ======================= */
+$militar-base: #3b4a3f;       /* Verde militar oscuro */
+$militar-oscuro: #2e3a32;     /* Verde profundo */
+$militar-luz: #4d5d52;        /* Verde claro atenuado */
+$arena: #c2b08c;              /* Arena cálida militar */
+$arena-oscura: #9e8967;       /* Arena oscura */
+
+/* ===================== */
+/*  LOGIN - FONDO ACERADO  */
+/* ===================== */
+
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* Fondo gris metálico acerado */
+  background:
+    /* Capa 1: texturizado diagonal tipo acero cepillado */
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.12) 0px,
+      rgba(255, 255, 255, 0.12) 2px,
+      rgba(0, 0, 0, 0.10) 4px,
+      rgba(0, 0, 0, 0.10) 6px
+    ),
+    /* Capa 2: brillo metálico difuso */
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(0,0,0,0.45) 0%,
+      rgba(0,0,0,0.12) 40%,
+      rgba(0,0,0,0.25) 80%
+    ),
+    /* Capa 3: acero oscuro puro */
+    linear-gradient(
+      135deg,
+      #424242 0%,   /* gris oscuro */
+      #2e2e2e 40%,  /* casi negro */
+      #3d3d3d 100%  /* acero tenue */
+    );
+
+  background-blend-mode: overlay, multiply, normal;
+  color: #ececec;
+
+  /* Sombra interior para un efecto metálico profundo */
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.7);
+}
+
+/* =========================================== */
+/*    LOGIN CARD – PLACA METÁLICA MILITAR      */
+/* =========================================== */
+
+.login-card-split {
+  width: 90%;
+  max-width: 950px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+
+  /* Fondo tipo placa metálica verde oscura */
+  background: 
+    /* Rayado metálico vertical */
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.04) 2px,
+      rgba(0, 0, 0, 0.08) 4px,
+      rgba(0, 0, 0, 0.08) 6px
+    ),
+    /* Mancha industrial para textura */
+    radial-gradient(
+      circle at 30% 40%,
+      rgba(0, 0, 0, 0.28) 0%,
+      rgba(0, 0, 0, 0.12) 30%,
+      rgba(0, 0, 0, 0.18) 60%,
+      rgba(0, 0, 0, 0.22) 100%
+    ),
+    /* Color base verde acero */
+    linear-gradient(
+      135deg,
+      #2c352e 0%,
+      #3f4b40 45%,
+      #2a332c 100%
+    );
+
+  background-blend-mode: overlay, multiply, normal;
+
+  /* Sombra tipo bloque de acero pesado */
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.45),
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    inset 0 0 20px rgba(0, 0, 0, 0.5);
+
+  /* Borde metálico verde opaco */
+  border: 2px solid rgba(90, 110, 90, 0.45);
+}
+
+/* Opcional: Marcos estilo placa reforzada */
+.login-card-split::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+
+  /* Bordes más oscuros para efecto 3D */
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.55);
+  pointer-events: none;
+}
+
+/* ======================= */
+/*   LADO IZQUIERDO MILITAR */
+/* ======================= */
+
+.panel-brand {
+  width: 45%;
+  color: white;
+  position: relative;
+
+  /* Degradado + tramado diagonal EXACTO del registro */
+  background: 
+    linear-gradient(
+      to bottom right,
+      $militar-base,
+      $militar-oscuro 65%
+    ),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.05) 8px,
+      rgba(0, 0, 0, 0.08) 8px,
+      rgba(0, 0, 0, 0.08) 16px
+    );
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+}
+
+/* Halo verde suave */
+.panel-brand::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(120, 255, 120, 0.10),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ========================= */
+/*   LADO DERECHO FORMULARIO */
+/* ========================= */
+
+.panel-form {
+  width: 55%;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  /* Fondo claro pero con ligera atenuación militar */
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f7f7f7 45%,
+    #eeeeee 100%
+  );
+
+  /* Sombra interna suave (premium) */
+  box-shadow: inset 0 0 12px rgba(0,0,0,0.06);
+}
+
+/* Ajustes de responsividad */
+@media (max-width: 992px) {
+  .panel-brand {
+    display: none !important;
+  }
+  .panel-form {
+    width: 100%;
+  }
+}
+
+.login-link-lg {
+  font-size: 1.1rem;     // súbelo si lo quieres más grande (1.2rem, 1.3rem…)
+  font-weight: 500;       // opcional, da más presencia
+}
+
+===== FILE: login-page.ts =====
+import { Component, ViewChild } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../../../core/auth/services/auth.service';
+import { LoginFormComponent } from '../../components/login-form/login-form';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-login-page',
+  standalone: true,
+  imports: [LoginFormComponent, RouterModule, CommonModule],
+  // 🔑 Cambios: Referencias a archivos externos
+  templateUrl: './login-page.html',
+  styleUrls: ['./login-page.scss']
+})
+export class LoginPageComponent { 
+  @ViewChild('loginForm') loginForm: any; // Asumiendo que esta referencia se usa
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  onLogin(credentials: { username: string; password: string }) {
+    this.authService.login(credentials).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        // Mejor usar un Toast o un mensaje en la UI en lugar de alert()
+        console.error('Error de login:', err);
+        // Podrías actualizar el formulario para mostrar el error.
+        // Ejemplo simple de manejo de error (si tienes un mensaje en el componente del form)
+        // this.loginForm.setError('Credenciales incorrectas o error de servidor.'); 
+      },
+    });
+  }
+}
+
+
+// import { Component, ViewChild } from '@angular/core';
+// import { Router, RouterModule } from '@angular/router';
+// import { AuthService } from '../../../../core/auth/services/auth.service';
+// import { LoginFormComponent } from '../../components/login-form/login-form';
+
+// @Component({
+//   selector: 'app-login-page',
+//   standalone: true,
+//   imports: [LoginFormComponent, RouterModule],
+//   template: `
+//     <div class="login-container">
+//       <app-login-form (login)="onLogin($event)" #loginForm></app-login-form>
+//     </div>
+//   `,
+//   styles: [`
+//     .login-container {
+//       min-height: 100vh;
+//       display: flex;
+//       justify-content: center;
+//       align-items: center;
+//       background: linear-gradient(135deg, #d6d6d6ff 0%, #67696dff 100%);
+//     }
+//   `]
+// })
+// export class LoginPageComponent {
+//   @ViewChild('loginForm') loginForm!: LoginFormComponent;
+
+//   constructor(
+//     private authService: AuthService,
+//     private router: Router
+//   ) {}
+
+//   onLogin(credentials: { username: string; password: string }) {
+//     this.authService.login(credentials).subscribe({
+//       next: () => {
+//         // ✅ Redirección al dashboard tras login exitoso
+//         this.router.navigate(['/dashboard']);
+//       },
+//       error: () => {
+//         // Opcional: muestra error visual
+//         // this.loginForm.setError('Credenciales inválidas');
+//       }
+//     });
+//   }
+// }
+
+===== FILE: register-form.component.html =====
+<div class="d-flex justify-content-center align-items-center bg-light p-0">
+  <div class="card shadow-lg border-0 rounded-4" style="max-width: 420px; width: 100%;">
+    
+    <div class="card-header text-white text-center py-3 rounded-top-4">
+      <h4 class="mb-0 fw-bold">Crear cuenta</h4>
+      <small class="opacity-75">Ingresa tus datos para continuar</small>
+    </div>
+
+    <div class="card-body p-4">
+      <form (ngSubmit)="submit()" #form="ngForm">
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Nombre completo</label>
+          <input 
+            name="nombre"
+            [(ngModel)]="credentials.nombre"
+            class="form-control"
+            placeholder="Ej: Juan Pérez"
+            required
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Usuario</label>
+          <input 
+            name="username"
+            [(ngModel)]="credentials.username"
+            class="form-control"
+            placeholder="Ej: jperez23"
+            required
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Correo electrónico</label>
+          <input 
+            name="email"
+            [(ngModel)]="credentials.email"
+            type="email"
+            class="form-control"
+            placeholder="correo@example.com"
+            required
+          >
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Contraseña</label>
+          <input 
+            name="password"
+            [(ngModel)]="credentials.password"
+            type="password"
+            class="form-control"
+            placeholder="••••••••"
+            required
+          >
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Rol de usuario</label>
+          <select 
+            name="rol"
+            [(ngModel)]="credentials.rol"
+            class="form-select"
+            required
+          >
+            <option value="" disabled selected>Selecciona tu rol</option>
+            <option value="estudiante">Estudiante</option>
+            <option value="instructor">Instructor</option>
+          </select>
+        </div>
+
+        <button 
+          type="submit"
+          class="btn btn-success w-100 py-2 fw-semibold"
+          [disabled]="form.invalid"
+        >
+          Registrarse
+        </button>
+
+      </form>
+    </div>
+
+  </div>
+</div>
+
+===== FILE: register-form.component.scss =====
+/* Verde militar base */
+$militar-base: #3b4a3f;       /* Verde militar oscuro */
+$militar-oscuro: #2e3a32;     /* Tramado más profundo */
+$militar-luz: #4d5d52;        /* Atenuación luminosa suave */
+
+/* CABECERA ESTILO MILITAR */
+.card-header {
+  background: linear-gradient(
+      to bottom right,
+      $militar-base,
+      $militar-oscuro 60%
+    ),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.04),
+      rgba(255, 255, 255, 0.04) 6px,
+      rgba(0, 0, 0, 0.05) 6px,
+      rgba(0, 0, 0, 0.05) 12px
+    );
+
+  border-bottom: none !important;
+  position: relative;
+  border-radius: 12px;
+}
+
+/* LUZ VERDE SUAVE */
+.card-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(120, 255, 120, 0.12),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* BOTÓN MILITAR PREMIUM */
+.btn-success {
+  background-color: $militar-base !important;
+  border-color: $militar-base !important;
+  transition: 0.2s ease;
+
+  &:hover {
+    background-color: $militar-oscuro !important;
+    border-color: $militar-oscuro !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 255, 100, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+}
+
+/* FORM INPUTS - estilo más limpio */
+.form-control,
+.form-select {
+  border-radius: 0.5rem;
+  border: 1px solid #d9d9d9;
+
+  &:focus {
+    border-color: $militar-base;
+    box-shadow: 0 0 0 0.2rem rgba(59, 74, 63, 0.25);
+  }
+}
+
+.card {
+  border: none !important;
+  box-shadow: none !important;
+  background: #f7f7f7; // opcional, puedes ajustarlo
+}
+
+// .card-header,
+// .card-body,
+// .card-footer {
+//   border: none !important;
+// }
+
+
+===== FILE: register-form.component.ts =====
+import { Component, EventEmitter, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-register-form',
+  standalone: true,
+  imports: [FormsModule, CommonModule],
+  templateUrl: './register-form.component.html', // <--- APUNTA AL NUEVO HTML
+  styleUrls: ['./register-form.component.scss']  // <--- APUNTA AL NUEVO SCSS
+})
+export class RegisterFormComponent {
+  @Output() register = new EventEmitter<{ 
+    username: string; 
+    password: string; 
+    email: string; 
+    nombre: string; 
+    rol: string 
+  }>();
+
+  credentials = {
+    username: '',
+    password: '',
+    email: '',
+    nombre: '',
+    rol: ''
+  };
+
+  submit() {
+    if (this.credentials.rol) {
+      this.register.emit(this.credentials);
+    }
+  }
+}
+
+===== FILE: register-page.component.html =====
+
+<div class="register-wrapper d-flex justify-content-center align-items-center">
+  <div class="register-card d-flex flex-column flex-lg-row shadow-lg">
+
+    <!-- LADO IZQUIERDO -->
+    <div class="register-left d-none d-lg-flex flex-column justify-content-center align-items-center p-4">
+      <h2 class="text-white fw-bold text-center mb-3">Bienvenido a IE RUNNERS</h2>
+      <p class="text-white-50 text-center">Tu aprendizaje empieza aquí. Únete y toma el control de tus cursos.</p>
+    </div>
+
+    <!-- LADO DERECHO -->
+    <div class="register-right p-5 d-flex flex-column justify-content-center">
+      <!-- <h3 class="fw-bold mb-4 text-center">Registro de Usuario</h3> -->
+
+      <app-register-form (register)="onRegister($event)"></app-register-form>
+
+      <p class="text-center mt-4">
+        ¿Ya tienes una cuenta?
+        <a routerLink="/login" class="fw-bold text-success text-decoration-none">
+          Inicia sesión
+        </a>
+      </p>
+    </div>
+
+  </div>
+</div>
+
+===== FILE: register-page.component.scss =====
+/* Paleta militar */
+$militar-base: #3b4a3f;       /* Verde militar oscuro */
+$militar-oscuro: #2e3a32;     /* Más profundo */
+$militar-luz: #4d5d52;        /* Atenuación luminosa suave */
+
+
+/* ===================== */
+/*  LOGIN - FONDO ACERADO  */
+/* ===================== */
+
+.register-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* Fondo gris metálico acerado */
+  background:
+    /* Capa 1: texturizado diagonal tipo acero cepillado */
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.12) 0px,
+      rgba(255, 255, 255, 0.12) 2px,
+      rgba(0, 0, 0, 0.10) 4px,
+      rgba(0, 0, 0, 0.10) 6px
+    ),
+    /* Capa 2: brillo metálico difuso */
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(0,0,0,0.45) 0%,
+      rgba(0,0,0,0.12) 40%,
+      rgba(0,0,0,0.25) 80%
+    ),
+    /* Capa 3: acero oscuro puro */
+    linear-gradient(
+      135deg,
+      #424242 0%,   /* gris oscuro */
+      #2e2e2e 40%,  /* casi negro */
+      #3d3d3d 100%  /* acero tenue */
+    );
+
+  background-blend-mode: overlay, multiply, normal;
+  color: #ececec;
+
+  /* Sombra interior para un efecto metálico profundo */
+  box-shadow: inset 0 0 60px rgba(0,0,0,0.7);
+}
+
+// .register-wrapper {
+//   min-height: 100vh;
+//   background: #f1f1f1;
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+// }
+
+/* CARD PRINCIPAL */
+.register-card {
+  width: 100%;
+  max-width: 900px;
+  min-height: 550px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: white;
+  display: flex;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+/* ======================= */
+/*   LADO IZQUIERDO MILITAR */
+/* ======================= */
+
+.register-left {
+  width: 50%;
+  color: white;
+  position: relative;
+
+  /* Degradado verde militar + tramado diagonal */
+  background: 
+    linear-gradient(
+      to bottom right,
+      $militar-base,
+      $militar-oscuro 65%
+    ),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.05) 8px,
+      rgba(0, 0, 0, 0.08) 8px,
+      rgba(0, 0, 0, 0.08) 16px
+    );
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+}
+
+/* Halo verde suave */
+.register-left::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 0%,
+    rgba(120, 255, 120, 0.10),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ========================= */
+/*   LADO DERECHO FORMULARIO */
+/* ========================= */
+
+.register-right {
+  width: 50%;
+  max-width: 450px;
+  margin: 0 auto;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .register-left {
+    display: none;
+  }
+  .register-right {
+    width: 100%;
+  }
+}
+
+===== FILE: register-page.component.ts =====
+import { Component } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common'; // Asegurar CommonModule si se usa ngIf/ngFor
+import { AuthService } from '../../../../core/auth/services/auth.service';
+import { RegisterFormComponent } from '../../components/register-form/register-form.component';
+
+@Component({
+  selector: 'app-register-page',
+  standalone: true,
+  imports: [RegisterFormComponent, RouterLink, CommonModule],
+  templateUrl: './register-page.component.html', // APUNTA AL NUEVO HTML
+  styleUrls: ['./register-page.component.scss']  // APUNTA AL NUEVO SCSS
+})
+export class RegisterPageComponent {
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  onRegister(credentials: { username: string; password: string; email: string; nombre: string; rol: string }) {
+    this.authService.register(credentials).subscribe({
+      next: () => {
+        alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        console.error('Error en registro:', err);
+        // Mejorar la gestión de errores aquí si el backend devuelve un mensaje específico
+        alert('Error al registrar. Revisa los datos e intenta de nuevo.');
+      }
+    });
+  }
+}
+
+===== FILE: reportes-form-create.html =====
+<p>reportes-form-create works!</p>
+
+===== FILE: reportes-form-create.scss =====
+
+===== FILE: reportes-form-create.ts =====
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-reportes-form-create',
+  imports: [],
+  templateUrl: './reportes-form-create.html',
+  styleUrl: './reportes-form-create.scss',
+})
+export class ReportesFormCreate {
+
+}
+
+===== FILE: reportes-form-edit.html =====
+<p>reportes-form-edit works!</p>
+
+===== FILE: reportes-form-edit.scss =====
+
+===== FILE: reportes-form-edit.ts =====
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-reportes-form-edit',
+  imports: [],
+  templateUrl: './reportes-form-edit.html',
+  styleUrl: './reportes-form-edit.scss',
+})
+export class ReportesFormEdit {
+
+}
+
+===== FILE: reportes-create-page.html =====
+<p>reportes-create-page works!</p>
+
+===== FILE: reportes-create-page.scss =====
+
+===== FILE: reportes-create-page.ts =====
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-reportes-create-page',
+  imports: [],
+  templateUrl: './reportes-create-page.html',
+  styleUrl: './reportes-create-page.scss',
+})
+export class ReportesCreatePage {
+
+}
+
+===== FILE: reportes-edit-page.html =====
+<p>reportes-edit-page works!</p>
+
+===== FILE: reportes-edit-page.scss =====
+
+===== FILE: reportes-edit-page.ts =====
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-reportes-edit-page',
+  imports: [],
+  templateUrl: './reportes-edit-page.html',
+  styleUrl: './reportes-edit-page.scss',
+})
+export class ReportesEditPage {
+
+}
+
+===== FILE: reportes-page.html =====
+<div class="reportes-container">
+  <h2>📊 Dashboard de Reportes</h2>
+
+  @if (loading) {
+    <div class="loading-message">
+      Cargando datos de reportes...
+    </div>
+  } @else {
+    <div class="grid-layout">
+      
+      <div class="report-card">
+        <h3>⭐ Cursos Más Populares</h3>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Curso</th>
+              <th>Inscripciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (curso of cursosPopulares; track curso.curso_id) {
+              <tr>
+                <td>{{ curso.curso_titulo }}</td>
+                <td class="text-center">{{ curso.total_inscripciones }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="2" class="text-center">
+                  No hay datos de inscripciones.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="report-card">
+        <h3>👥 Usuarios por Rol</h3>
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Rol</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (rolData of usuariosPorRol; track rolData.rol) {
+              <tr>
+                <td>{{ rolData.rol | titlecase }}</td>
+                <td class="text-center">{{ rolData.total }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="2" class="text-center">
+                  No hay datos de usuarios.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="report-card full-width">
+        <h3>🧑‍🏫 Carga de Cursos por Instructor</h3>
+
+        <div class="scroll-limit">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Instructor</th>
+                <th>Cursos Asignados</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (instructor of instructoresYCursos; track instructor.instructor_id) {
+                <tr>
+                  <td>{{ instructor.instructor_nombre }}</td>
+                  <td class="text-center">{{ instructor.total_cursos_impartidos }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="2" class="text-center">
+                    No hay datos de instructores (o no tienen cursos asignados).
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+===== FILE: reportes-page.scss =====
+:host {
+  display: block;
+  // background: #0f150f; /* Verde militar oscuro */
+  // min-height: 100vh;
+  padding: 0px;
+  color: #e2e2e2;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Título general */
+.reportes-container h2 {
+  color: #c5d18a; /* verde oliva claro */
+  text-align: center;
+  margin-bottom: 25px;
+  text-shadow: 0 0 6px rgba(0,0,0,0.6);
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+/* Layout */
+.grid-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+/* Tarjetas estilo militar */
+.report-card {
+  background: #1a241a; /* verde oscuro */
+  border: 2px solid #3a4b32; /* borde verde oliva */
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.4);
+  position: relative;
+}
+
+.report-card.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Encabezados de cada tarjeta */
+.report-card h3 {
+  color: #d0dd9d;
+  margin-bottom: 15px;
+  font-weight: 600;
+  border-bottom: 2px solid #4e5e41;
+  padding-bottom: 5px;
+  letter-spacing: 0.5px;
+}
+
+/* Estilo tabla militar */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+.report-table thead {
+  background: #3d4a3a; /* verde oliva */
+}
+
+.report-table th {
+  padding: 8px;
+  text-align: left;
+  color: #f0f0f0;
+  font-weight: 600;
+  border-bottom: 1px solid #2e352c;
+}
+
+.report-table td {
+  padding: 7px;
+  border-bottom: 1px solid #263025;
+  color: #dcdcdc;
+}
+
+/* Hover estilo fuerza especial */
+.report-table tbody tr:hover {
+  background: #2a3a2a;
+  transition: 0.2s ease-in-out;
+}
+
+/* Centrado */
+.text-center {
+  text-align: center;
+}
+
+/* Mensaje de carga */
+.loading-message {
+  color: #c8d69b;
+  font-weight: 500;
+  text-align: center;
+}
+
+.scroll-limit {
+  max-height: 200px; /* altura ~5 filas */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4e5e41 #1a241a; /* colores militares */
+}
+
+/* Estilo militar para scroll en Chrome */
+.scroll-limit::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-limit::-webkit-scrollbar-track {
+  background: #1a241a;
+}
+
+.scroll-limit::-webkit-scrollbar-thumb {
+  background-color: #4e5e41;
+  border-radius: 4px;
+}
+
+===== FILE: reportes-page.ts =====
+// src/app/features/reportes/pages/reportes-page/reportes-page.ts
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReportesService } from '../../../../core/services/reportes.service'; // Ajusta la ruta a tu servicio
+
+@Component({
+  selector: 'app-reportes-page',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './reportes-page.html', // Usaremos un archivo .html
+  styleUrls: ['./reportes-page.scss']
+})
+export default class ReportesPage implements OnInit { // Usamos 'export default class' para el lazy loading
+// Nota: La ruta pide 'ReportesPage', si el archivo usa 'export default', 
+// Angular lo maneja correctamente.
+
+  // Variables para almacenar los datos de los reportes
+  cursosPopulares: any[] = [];
+  usuariosPorRol: any[] = [];
+  instructoresYCursos: any[] = [];
+  
+  loading: boolean = true;
+
+  // Inyectamos el servicio
+  constructor(private reportesService: ReportesService) { }
+
+  ngOnInit(): void {
+    this.cargarReportes();
+  }
+
+cargarReportes(): void {
+    this.loading = true;
+    
+    // 1. Cargar Cursos Populares
+    this.reportesService.getCursosPopulares().subscribe({
+        next: (res: any) => { // Agregamos :any para mejor tipado
+            // INTENTO 1: Usar res.data (como está ahora)
+            // this.cursosPopulares = res.data; 
+
+            // INTENTO 2: Si el backend retorna el array directamente
+            // Si res.data es undefined, usa res. Esto es más seguro.
+            this.cursosPopulares = res.data || res; 
+        },
+        error: (err) => console.error('Error al cargar cursos populares:', err)
+    });
+
+    // Repetir el patrón para las otras dos peticiones
+    this.reportesService.getUsuariosPorRol().subscribe({
+        next: (res: any) => {
+            this.usuariosPorRol = res.data || res;
+        },
+        error: (err) => console.error('Error al cargar usuarios por rol:', err)
+    });
+
+    this.reportesService.getInstructoresYCursos().subscribe({
+        next: (res: any) => {
+            this.instructoresYCursos = res.data || res;
+            this.loading = false;
+        },
+        error: (err) => {
+            console.error('Error al cargar instructores:', err);
+            this.loading = false;
+        }
+    });
+}
+}
+
+===== FILE: usuarios.routes.ts =====
+// src/app/features/usuarios/usuarios.routes.ts
+
+import { Routes } from '@angular/router';
+
+export const USUARIOS_ROUTES: Routes = [
+  // LISTADO DE USUARIOS (/dashboard/usuarios)
+  {
+    path: '',
+    loadComponent: () =>
+      import('./pages/usuarios-page/usuarios-page').then(
+        (m) => m.UsuariosPageComponent
+      ),
+    pathMatch: 'full',
+  },
+
+  // CREAR USUARIO (/dashboard/usuarios/crear)
+  {
+    path: 'crear',
+    loadComponent: () =>
+      import('./pages/user-create-page/user-create-page').then( // Se asume el sufijo .component
+        (m) => m.UserCreatePage
+      ),
+  },
+
+  // EDITAR USUARIO (/dashboard/usuarios/editar/:id)
+  {
+    path: 'editar/:id',
+    loadComponent: () =>
+      import('./pages/user-edit-page/user-edit-page.component').then(
+        (m) => m.UserEditPageComponent
+      ),
+  },
+];
+
+===== FILE: user-form-create.component.html =====
+<form [formGroup]="userForm" (ngSubmit)="guardarUsuario()">
+  <!-- <h3>Crear Nuevo Usuario 2252</h3> -->
+
+  <div class="form-group">
+    <label for="username">Usuario:</label>
+    <input id="username" type="text" formControlName="username" class="form-control" />
+    @if (userForm.get('username')?.invalid && userForm.get('username')?.touched) {
+      <div class="text-danger">El usuario es obligatorio.</div>
+    }
+  </div>
+
+  <div class="form-group">
+    <label for="email">Email:</label>
+    <input id="email" type="email" formControlName="email" class="form-control" />
+    @if (userForm.get('email')?.hasError('required') && userForm.get('email')?.touched) {
+      <div class="text-danger">El email es obligatorio.</div>
+    }
+    @if (userForm.get('email')?.hasError('email') && userForm.get('email')?.touched) {
+      <div class="text-danger">Formato de email inválido.</div>
+    }
+  </div>
+
+  <div class="form-group">
+    <label for="nombre">Nombre Completo:</label>
+    <input id="nombre" type="text" formControlName="nombre" class="form-control" />
+    @if (userForm.get('nombre')?.invalid && userForm.get('nombre')?.touched) {
+      <div class="text-danger">El nombre es obligatorio.</div>
+    }
+  </div>
+
+  <div class="form-group">
+    <label for="rol">Rol:</label>
+    <select id="rol" formControlName="rol" class="form-control">
+      <option value="administrador">Administrador</option>
+      <option value="instructor">Instructor</option>
+      <option value="estudiante">Estudiante</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="password">Contraseña:</label>
+    <input id="password" type="password" formControlName="password" class="form-control" />
+    @if (userForm.get('password')?.hasError('required') && userForm.get('password')?.touched) {
+      <div class="text-danger">La contraseña es obligatoria.</div>
+    }
+    @if (userForm.get('password')?.hasError('minlength') && userForm.get('password')?.touched) {
+      <div class="text-danger">La contraseña debe tener al menos 6 caracteres.</div>
+    }
+  </div>
+
+<div class="form-actions mt-4 d-flex gap-2">
+  <button type="submit" [disabled]="userForm.invalid" class="btn btn-primary">
+    Crear Usuario
+  </button>
+  <app-cancel-button navigateTo="/usuarios"></app-cancel-button>
+</div>
+</form>
+
+===== FILE: user-form-create.component.scss =====
+
+===== FILE: user-form-create.component.ts =====
+// src/app/features/usuarios/components/user-form-create/user-form-create.component.ts
+
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms'; // ⬅️ Importar ReactiveFormsModule
+import { CommonModule } from '@angular/common'; // ⬅️ Importar CommonModule
+import { UsuarioRegistro } from '../../../../core/models/usuario.model';
+import { CancelButtonComponent } from "../../../../shared/components/cancel-button/cancel-button.component"; // Asumiendo que esta ruta es correcta [cite: 742]
+
+@Component({
+  selector: 'app-user-form-create',
+  standalone: true,
+  // 💡 CORRECCIÓN: Incluir los módulos necesarios para formularios y directivas
+  imports: [
+    ReactiveFormsModule,
+    CommonModule,
+    CancelButtonComponent
+], 
+  templateUrl: './user-form-create.component.html', 
+  styleUrls: ['./user-form-create.component.scss']
+})
+export class UserFormCreateComponent implements OnInit {
+  // Inicializar userForm con el tipo correcto
+  userForm!: FormGroup; 
+  
+  // Emite el usuario con la contraseña (UsuarioRegistro) [cite: 921]
+  @Output() usuarioRegistrado = new EventEmitter<UsuarioRegistro>();
+
+  constructor(private fb: FormBuilder) {}
+
+  ngOnInit(): void {
+    // Inicialización del formulario con campos y validadores
+    this.userForm = this.fb.group({
+      username: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      nombre: ['', [Validators.required]],
+      // Valor por defecto 'estudiante' [cite: 920]
+      rol: ['estudiante', [Validators.required]],
+      // Campo PASSWORD OBLIGATORIO para la creación [cite: 920]
+      password: ['', [Validators.required, Validators.minLength(6)]],
+    });
+  }
+
+  guardarUsuario(): void {
+    if (this.userForm.valid) {
+      // Se emiten los valores del formulario como UsuarioRegistro [cite: 921]
+      this.usuarioRegistrado.emit(this.userForm.value as UsuarioRegistro);
+    } else {
+      // Marcar todos los campos como tocados para mostrar los mensajes de error
+      this.userForm.markAllAsTouched();
+    }
+  }
+}
+
+===== FILE: user-form-edit.component.html =====
+<form [formGroup]="userForm" (ngSubmit)="guardarUsuario()">
+  <h3>Editando Usuario: {{ usuario.username }}</h3>
+  
+  <div class="form-group">
+    <label for="username">Usuario:</label>
+    <input id="username" type="text" formControlName="username" class="form-control" />
+    </div>
+  
+  <div class="form-group">
+    <label for="email">Email:</label>
+    <input id="email" type="email" formControlName="email" class="form-control" />
+    </div>
+
+  <div class="form-group">
+    <label for="nombre">Nombre Completo:</label>
+    <input id="nombre" type="text" formControlName="nombre" class="form-control" />
+    </div>
+
+  <div class="form-group">
+    <label for="rol">Rol:</label>
+    <select id="rol" formControlName="rol" class="form-control">
+      <option value="administrador">Administrador</option>
+      <option value="instructor">Instructor</option>
+      <option value="estudiante">Estudiante</option>
+    </select>
+  </div>
+  
+  <div class="form-check form-switch mt-3">
+    <input 
+      class="form-check-input" 
+      type="checkbox" 
+      id="activoSwitch" 
+      formControlName="activo">
+    <label class="form-check-label" for="activoSwitch">
+      Estado: {{ userForm.get('activo')?.value ? 'Activo' : 'Inactivo' }}
+    </label>
+  </div>
+  
+  <div class="form-actions mt-4">
+    <button type="submit" [disabled]="userForm.invalid" class="btn btn-primary">
+      Actualizar Usuario
+    </button>
+  </div>
+</form>
+
+===== FILE: user-form-edit.component.scss =====
+
+===== FILE: user-form-edit.component.ts =====
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { Usuario, UsuarioUpdate } from '../../../../core/models/usuario.model';
+
+@Component({
+  selector: 'app-user-form-edit',
+  standalone: true,
+  imports: [ReactiveFormsModule, CommonModule],
+  templateUrl: './user-form-edit.component.html', // Nuevo HTML
+  styleUrls: ['./user-form-edit.component.scss']
+})
+export class UserFormEditComponent implements OnInit {
+  
+  // Recibe el usuario completo existente
+  @Input({ required: true }) usuario!: Usuario; 
+  @Output() usuarioActualizado = new EventEmitter<Usuario>();
+  // @Output() usuarioActualizado = new EventEmitter<UsuarioUpdate>();
+  @Output() cancelar = new EventEmitter<void>();
+  
+  userForm!: FormGroup;
+  roles = ['administrador', 'instructor', 'estudiante'];
+
+  constructor(private fb: FormBuilder) {}
+
+  ngOnInit(): void {
+      // 💡 CORRECCIÓN 3: Inicialización del formulario con TODOS los campos
+      this.userForm = this.fb.group({
+        // ID es necesario para la actualización en el servicio
+        id: [this.usuario.id, [Validators.required]], 
+        username: [this.usuario.username, [Validators.required]],
+        email: [this.usuario.email, [Validators.required, Validators.email]],
+        nombre: [this.usuario.nombre, [Validators.required]],
+        rol: [this.usuario.rol, [Validators.required]],
+        // Campo Activo/Inactivo (Booleano)
+        activo: [this.usuario.activo, [Validators.required]], 
+      });
+    }
+
+  guardarUsuario(): void {
+    if (this.userForm.valid) {
+      // Emitimos el valor completo (incluyendo el ID para el servicio padre)
+      this.usuarioActualizado.emit(this.userForm.value as Usuario);
+    } else {
+      this.userForm.markAllAsTouched();
+    }
+  }
+}
+
+===== FILE: user-create-page.html =====
+
+===== FILE: user-create-page.scss =====
+
+===== FILE: user-create-page.ts =====
+// src/app/features/usuarios/pages/user-create/user-create.page.ts
+
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common'; // Para directivas básicas si son necesarias
+import { Router } from '@angular/router'; // Para la navegación
+import { catchError, of, tap } from 'rxjs';
+
+// ⬅️ Importar el componente de formulario (dumb component)
+import { UserFormCreateComponent } from '../../components/user-form-create/user-form-create.component'; 
+
+// ⬅️ Importar el servicio y los modelos
+import { UsuarioService } from '../../../../core/services/usuario.service'; // Asumiendo esta ruta
+import { UsuarioRegistro } from '../../../../core/models/usuario.model'; 
+
+@Component({
+  selector: 'app-user-create-page',
+  standalone: true,
+  // 💡 CORRECCIÓN: Incluir UserFormCreateComponent en imports
+  imports: [
+    CommonModule, 
+    UserFormCreateComponent // El formulario que acabamos de corregir
+  ], 
+  template: `
+    <div class="user-create-container p-4">
+      <h2>Crear Nuevo Usuario</h2>
+      <app-user-form-create 
+        (usuarioRegistrado)="registrarUsuario($event)">
+      </app-user-form-create>
+    </div>
+  `,
+  styleUrls: ['./user-create-page.scss']
+})
+export class UserCreatePage {
+
+  // 💡 Inyección del servicio y el enrutador
+  constructor(
+    private usuarioService: UsuarioService, 
+    private router: Router
+  ) {}
+
+  /**
+   * Maneja el evento emitido por el UserFormCreateComponent.
+   * Llama al servicio para registrar el usuario, incluyendo la contraseña.
+   * @param usuario El objeto UsuarioRegistro con los datos del formulario.
+   */
+  registrarUsuario(usuario: UsuarioRegistro): void {
+    console.log('Datos a registrar:', usuario);
+    
+    // 💡 Llamada al servicio con manejo de éxito y error
+    this.usuarioService.crearUsuario(usuario)
+      .pipe(
+        // Si tiene éxito: navega y muestra un mensaje
+        tap(response => {
+          alert(`Usuario ${response.username} creado con éxito.`);
+          this.router.navigate(['/usuarios']); // Redirigir al listado
+        }),
+        // Si hay un error en la API: muestra un mensaje de error (o maneja el estado)
+        catchError(error => {
+          console.error('Error al registrar el usuario:', error);
+          alert('Error al crear el usuario. Revise la consola para más detalles.');
+          // Retorna un observable vacío para que la suscripción no falle
+          return of(null); 
+        })
+      )
+      .subscribe();
+  }
+}
+
+===== FILE: user-edit-page.component.html =====
+
+===== FILE: user-edit-page.component.scss =====
+
+===== FILE: user-edit-page.component.ts =====
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { UsuarioService } from '../../../../core/services/usuario.service';
+import { Usuario, UsuarioUpdate } from '../../../../core/models/usuario.model';
+import { UserFormEditComponent } from '../../components/user-form-edit/user-form-edit.component'; // Formulario de Presentación
+import { catchError, of, tap } from 'rxjs';
+
+// Definimos el tipo de datos que esperamos del formulario de edición: 
+// Datos de actualización (opcionales) + el ID requerido.
+type UsuarioEditPayload = UsuarioUpdate & Pick<Usuario, 'id'>;
+
+@Component({
+  selector: 'app-user-edit-page',
+  standalone: true,
+  // Importamos CommonModule y el Formulario de Presentación
+  imports: [CommonModule, UserFormEditComponent], 
+  template: `
+    <div class="container my-4">
+      <h2>Editar Usuario</h2>
+      <div *ngIf="isLoading" class="alert alert-info">Cargando datos del usuario...</div>
+      <div *ngIf="usuarioActual; else notFound">
+        <!-- 
+          Conexión al Componente Dumb (Presentación):
+          1. [usuario]: Pasa los datos cargados (Input).
+          2. (usuarioActualizado): Escucha el evento de guardado (Output) y llama a actualizarUsuario.
+        -->
+        <app-user-form-edit 
+          [usuario]="usuarioActual" 
+          (usuarioActualizado)="actualizarUsuario($event)" (cancelar)="onCancelar()" 
+        ></app-user-form-edit>
+      </div>
+      <ng-template #notFound>
+        <div *ngIf="!isLoading" class="alert alert-danger">
+          No se encontró el usuario o hubo un error de carga.
+        </div>
+      </ng-template>
+    </div>
+  `,
+  styleUrls: ['./user-edit-page.component.scss']
+})
+export class UserEditPageComponent implements OnInit {
+  usuarioActual: Usuario | null = null;
+  isLoading: boolean = true;
+  userId!: number;
+
+  constructor(
+    private route: ActivatedRoute, // Para leer el parámetro 'id'
+    private router: Router,
+    private usuarioService: UsuarioService // Servicio de la API
+  ) {}
+
+  ngOnInit(): void {
+    // 1. Obtener el ID de la URL
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.userId = +id;
+        this.cargarUsuario(this.userId);
+      } else {
+        // Si no hay ID, redirigir
+        this.router.navigate(['/usuarios']);
+      }
+    });
+  }
+
+  /**
+   * Carga los datos del usuario desde la API.
+   */
+  cargarUsuario(id: number): void {
+    this.isLoading = true;
+    this.usuarioService.getUsuarioById(id).subscribe({
+      next: (data: Usuario) => {
+        this.usuarioActual = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error al obtener usuario:', err);
+        this.isLoading = false;
+        this.usuarioActual = null;
+      }
+    });
+  }
+
+
+  actualizarUsuario(usuario: Usuario): void {
+    this.usuarioService.actualizarUsuario(usuario.id, usuario)
+      .pipe(
+        tap(response => {
+          alert(`Usuario ${response.username} actualizado con éxito.`);
+          // 💡 CORRECCIÓN: Navegar de vuelta al listado después de actualizar
+          this.router.navigate(['/usuarios']); 
+        }),
+        catchError(error => {
+          console.error('Error al actualizar el usuario:', error);
+          alert('Error al actualizar el usuario.');
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+
+
+  onCancelar(): void {
+    this.router.navigate(['/usuarios']);
+  }
+}
+
+===== FILE: usuarios-page.html =====
+<div class="usuarios-list-container p-4">
+  <header class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Listado de Usuarios</h2>
+    <button (click)="nuevoUsuario()" class="btn btn-primary">
+      ➕ Nuevo Usuario
+    </button>
+  </header>
+
+  @if (cargando) {
+    <div class="alert alert-info">Cargando usuarios...</div>
+  } 
+  @else if (error) {
+    <div class="alert alert-danger">{{ error }}</div>
+  } 
+  @else if (usuarios.length === 0) {
+    <div class="alert alert-warning">No se encontraron usuarios registrados.</div>
+  }
+
+  @if (usuarios.length > 0) {
+<div class="table-responsive">
+  <table class="table table-striped table-hover">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Usuario</th>
+        <th>Email</th>
+        <th>Nombre</th>
+        <th>Rol</th>
+        <th>Activo</th>
+        <th class="text-end">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (usuario of usuarios; track usuario.id) {
+        <tr>
+          <td>{{ usuario.id }}</td>
+          <td>{{ usuario.username }}</td>
+          <td>{{ usuario.email }}</td>
+          <td>{{ usuario.nombre }}</td>
+          <!-- <td>{{ usuario.rol | titlecase }}</td> -->
+
+            <td>{{ usuario.rol | roleDisplay }}</td>
+
+          <td>
+            <span 
+              class="badge" 
+              [ngClass]="{'bg-success': usuario.activo, 'bg-danger': !usuario.activo}">
+              @if (usuario.activo) {
+                Sí
+              } @else {
+                No
+              }
+            </span>
+          </td>
+          <td class="text-end">
+            <button (click)="editarUsuario(usuario)" class="btn btn-sm btn-info me-2">
+              ✏️ Editar
+            </button>
+            <button (click)="eliminarUsuario(usuario.id)" class="btn btn-sm btn-danger">
+              🗑️ Eliminar
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+    <nav aria-label="Navegación de páginas">
+      <ul class="pagination justify-content-center">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <a class="page-link" (click)="irAPagina(currentPage - 1)">Anterior</a>
+        </li>
+
+        @for (page of generarRangoPaginas(); track page) {
+          <li class="page-item" [class.active]="page === currentPage">
+            <a class="page-link" (click)="irAPagina(page)">{{ page }}</a>
+          </li>
+        }
+
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <a class="page-link" (click)="irAPagina(currentPage + 1)">Siguiente</a>
+        </li>
+      </ul>
+      <p class="text-center mt-2">Página {{ currentPage }} de {{ totalPages }}</p>
+    </nav>
+  }
+</div>
+
+===== FILE: usuarios-page.scss =====
+/* ===== PALETA MILITAR ARENA–OLIVA ===== */
+$militar-oscuro: #3a3a33;      // base oliva apagada
+$militar-suave: #4a4a42;       // metalizado oliva
+$militar-borde: #2e2e28;       // borde oscuro táctico
+$militar-panel: #f2f2f0;       // arena muy suave para fondos
+$militar-texto: #222;          // gris oscuro legible
+
+/* ===== CONTENEDOR GENERAL ===== */
+.usuarios-list-container {
+  background: transparent;     // Se funde con el fondo
+  border: none;                // Sin líneas
+  border-radius: 0;            // Sin esquinas marcadas
+  padding: 2rem;
+  color: $militar-texto;       // Mantiene el color de texto militar
+  box-shadow: none;            // Sin sombras ni efectos
+}
+
+/* ===== CABECERA ===== */
+header {
+  background: linear-gradient(90deg, $militar-oscuro, $militar-suave);
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  border: 1px solid $militar-borde;
+  color: #f1f1f1;
+
+  h2 {
+    margin: 0;
+  }
+
+  .btn-primary {
+    background-color: $militar-oscuro !important;
+    border-color: $militar-oscuro !important;
+
+    &:hover {
+      background-color: $militar-borde !important;
+      border-color: $militar-borde !important;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/* ===== TABLA MILITAR ===== */
+.table {
+  background: $militar-panel;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+
+  thead {
+    background: linear-gradient(180deg, $militar-oscuro, $militar-suave);
+    color: #e7e7e7;
+
+    th {
+      border-bottom: 2px solid $militar-borde;
+    }
+  }
+
+  tbody tr {
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(74, 74, 66, 0.15); // highlight oliva suave
+    }
+  }
+
+  td, th {
+    vertical-align: middle;
+  }
+}
+
+/* ===== BADGES (activo / inactivo) ===== */
+.badge.bg-success {
+  background-color: #50644d !important; // verde oliva apagado
+}
+
+.badge.bg-danger {
+  background-color: #7b3f3f !important; // rojo militar oscuro
+}
+
+/* ===== BOTONES DE ACCIONES ===== */
+.btn-info {
+  background-color: #4a5850 !important; // oliva metalizado
+  border-color: #4a5850 !important;
+  color: #fff;
+
+  &:hover {
+    background-color: $militar-oscuro !important;
+    border-color: $militar-oscuro !important;
+  }
+}
+
+.btn-danger {
+  background-color: #6b2f2f !important; // rojo apagado militar
+  border-color: #6b2f2f !important;
+
+  &:hover {
+    background-color: #5a2626 !important;
+    border-color: #5a2626 !important;
+  }
+}
+
+/* ===== PAGINACIÓN ===== */
+.pagination .page-link {
+  background-color: $militar-panel;
+  border: 1px solid $militar-borde;
+  color: $militar-texto;
+
+  &:hover {
+    background-color: rgba(74, 74, 66, 0.2);
+  }
+}
+
+.page-item.active .page-link {
+  background-color: $militar-oscuro;
+  border-color: $militar-oscuro;
+  color: #fff;
+}
+
+===== FILE: usuarios-page.ts =====
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { catchError, of, Subject, switchMap, tap, takeUntil } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { UsuarioService } from '../../../../core/services/usuario.service';
+import { Router } from '@angular/router';
+import { Usuario } from '../../../../core/models/usuario.model';
+import { RoleDisplayPipe } from "../../../../shared/pipes/role-display.pipe";
+
+@Component({
+  selector: 'app-usuarios-page',
+  standalone: true,
+  imports: [CommonModule, RoleDisplayPipe],
+  templateUrl: './usuarios-page.html',
+  styleUrls: ['./usuarios-page.scss']
+})
+export class UsuariosPageComponent implements OnInit, OnDestroy {
+  usuarios: Usuario[] = [];
+  cargando = false;
+  error: string | null = null;
+
+  currentPage = 1;
+  totalPages = 1;
+  limit = 10;
+
+  private destroy$ = new Subject<void>();
+  private cargarTrigger$ = new Subject<void>(); // 🚀 NUEVO disparador de recargas
+
+  constructor(
+    private usuarioService: UsuarioService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+
+    // 🚀 Sistema reactivo de carga seguro
+    this.cargarTrigger$
+      .pipe(
+        tap(() => {
+          this.cargando = true;
+          this.error = null;
+        }),
+        switchMap(() =>
+          this.usuarioService.getUsuariosPaginados(this.currentPage, this.limit)
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (res) => {
+          this.usuarios = res.data;
+          this.totalPages = Math.ceil(res.total / this.limit);
+          this.cargando = false;
+        },
+        error: () => {
+          this.error = "Error al cargar los usuarios";
+          this.cargando = false;
+        }
+      });
+
+    // Primera carga
+    this.cargarTrigger$.next();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // 🔥 Ahora esta función solo dispara el evento
+  cargarUsuarios(): void {
+    this.cargarTrigger$.next();
+  }
+
+  eliminarUsuario(id: number): void {
+    if (!confirm("¿Seguro que deseas eliminar este usuario?")) return;
+
+    this.usuarioService.deleteUsuario(id)
+      .pipe(
+        tap(() => {
+          alert("Usuario eliminado correctamente.");
+          this.cargarTrigger$.next(); // 🚀 recarga con flujo seguro
+        }),
+        catchError(err => {
+          console.error("Error al eliminar usuario:", err);
+          alert("No se pudo eliminar el usuario.");
+          return of(null);
+        })
+      )
+      .subscribe();
+  }
+
+  nuevoUsuario(): void {
+    this.router.navigate(['/usuarios/crear']);
+  }
+
+  editarUsuario(usuario: Usuario): void {
+    this.router.navigate(['/usuarios/editar', usuario.id]);
+  }
+
+  irAPagina(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.cargarTrigger$.next(); // 🚀 recarga reactiva
+    }
+  }
+
+  generarRangoPaginas(): number[] {
+    const delta = 2;
+    const range: number[] = [];
+    for (
+      let i = Math.max(1, this.currentPage - delta);
+      i <= Math.min(this.totalPages, this.currentPage + delta);
+      i++
+    ) {
+      range.push(i);
+    }
+    return range;
+  }
+}
+
+===== FILE: dashboard-layout.component.html =====
+<div class="d-flex vh-100">
+  <nav class="sidebar-glass text-white p-3 d-flex flex-column" style="width: 250px;">
+    <div class="mb-4 text-center">
+      <h3 class="logo">IE RUNNERS</h3>
+    </div>
+    <div class="mb-4 text-center p-2 border-bottom border-secondary">
+      @if (currentUser) {
+      <small class="d-block text-secondary">Bienvenido, **{{ currentUser.nombre }}**</small>
+      <span class="badge mt-1 text-black" 
+            [ngClass]="{'bg-danger': currentUser.rol === 'administrador',
+              'bg-warning ': currentUser.rol === 'instructor',
+              'bg-info text-success': currentUser.rol === 'estudiante'
+            }">
+          {{ currentUser.rol | titlecase }}
+      </span>
+      }
+    </div>
+    
+    <div class="nav nav-pills flex-column mb-auto">
+      <a class="nav-link mt-3 text-secondary border-bottom pb-1 fs-6 blod"
+         routerLink="/dashboard" routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }">
+        <i class="bi bi-house-door-fill me-2"></i> Dashboard Principal
+      </a>
+      
+      @if (userRole === 'administrador') {
+        <a class="nav-link mt-3 text-secondary border-bottom pb-1 fs-6 blod"
+           routerLink="/usuarios" routerLinkActive="active">
+          <i class="bi bi-people-fill me-2"></i> Gestión Usuarios
+        </a>
+        <a class="nav-link mt-3 text-secondary border-bottom pb-1 fs-6 blod"
+           routerLink="/cursos" routerLinkActive="active">
+          <i class="bi bi-book-fill me-2"></i> Gestión Cursos
+        </a>
+        <a class="nav-link mt-3 text-secondary border-bottom pb-1 fs-6 blod"
+           routerLink="/inscripciones" routerLinkActive="active">
+          <i class="bi bi-clipboard-check me-2"></i> Gestión Inscripciones
+        </a>
+      }
+      
+      @if (userRole === 'instructor') {
+        <a class="nav-link mt-3 text-secondary border-bottom pb-1 fs-6 blod"
+           routerLink="/cursos" routerLinkActive="active">
+          <i class="bi bi-collection-fill me-2"></i> Mis Cursos
+        </a>
+        <a class="nav-link mt-3 text-secondary border-bottom pb-1 fs-6 blod"
+           routerLink="/estudiantes" routerLinkActive="active">
+          <i class="bi bi-person-badge-fill me-2"></i> Mis Estudiantes
+        </a>
+      }
+      
+      @if (userRole === 'estudiante') { 
+          <a class="nav-link mt-3 text-secondary border-bottom pb-1 fs-6 blod"
+             routerLink="/catalogo" routerLinkActive="active"> 
+              <i class="bi bi-search me-2"></i> Catálogo de Cursos 
+          </a> 
+          <a class="nav-link mt-3 text-secondary border-bottom pb-1 fs-6 blod"
+             routerLink="/mis-cursos" routerLinkActive="active"> 
+              <i class="bi bi-card-checklist me-2"></i> Mis Inscripciones 
+          </a>
+      }
+
+      @if (currentUser?.rol === 'administrador' || currentUser?.rol === 'instructor') {
+        <a class="nav-link mt-3 text-secondary border-bottom pb-1 fs-6 blod"
+           routerLink="/reportes" routerLinkActive="active">
+          <i class="bi bi-bar-chart-fill me-2"></i> Reportes
+        </a>
+      }
+      
+    </div>
+    <button (click)="logout()" class="btn btn-sm btn-logout w-100 mt-auto">
+      <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+    </button>
+  </nav>
+
+  <!-- AQUI EL FIX (solo agregué dashboard-main) -->
+  <main class="d-flex flex-column flex-grow-1 dashboard-main">
+    
+    <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm p-3">
+      <div class="container-fluid">
+        <h1 class="h5 mb-0">Panel Administrativo</h1>
+        <div class="ms-auto">
+          <span class="text-withe small">Último acceso: Hoy</span>
+        </div>
+      </div>
+    </header>
+    
+    <div class="p-4">
+      <router-outlet></router-outlet> 
+    </div>
+    
+  </main>
+</div>
+
+===== FILE: dashboard-layout.component.scss =====
+/* ======================= */
+/*  PALETA MILITAR GLOBAL  */
+/* ======================= */
+$militar-base: #3b4a3f;       /* Verde militar oscuro */
+$militar-oscuro: #2e3a32;     /* Verde profundo */
+$militar-luz: #4d5d52;        /* Verde claro apagado */
+
+$militar-suave: #4a4a42;          // tono metalizado
+$militar-borde: #2e2e28;          // borde metálico oscuro
+$militar-texto: #f1f1f1;          // blanco militar suave (no puro)
+
+
+/* ======================= */
+/*     SIDEBAR MILITAR     */
+/* ======================= */
+.sidebar-glass {
+    width: 260px;
+    color: #fff;
+    border: none;
+    position: relative;
+
+    background:
+      linear-gradient(
+        to bottom right,
+        $militar-base,
+        $militar-oscuro 65%
+      ),
+      repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.05),
+        rgba(255, 255, 255, 0.05) 8px,
+        rgba(0, 0, 0, 0.08) 8px,
+        rgba(0, 0, 0, 0.08) 16px
+      );
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    /* Sombras sutiles, sin luces verdes */
+    box-shadow:
+      inset 2px 0 8px rgba(0,0,0,0.4),
+      0 6px 18px rgba(0,0,0,0.45);
+
+    padding: 1.5rem;
+    transition: 0.3s ease;
+}
+
+/* ELIMINADO EL HALO VERDE */
+.sidebar-glass::after {
+    display: none;
+}
+
+
+/* ======================= */
+/*     NAV ITEMS MILITAR   */
+/* ======================= */
+
+.nav-pills .nav-link {
+    color: rgba(255,255,255,0.82);
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin: 6px 0;
+    transition: background 0.25s ease, transform 0.15s;
+}
+
+/* Hover sobrio, sin neón */
+.nav-pills .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.10);
+    color: #fff;
+    transform: translateX(4px);
+}
+
+/* ACTIVO — AHORA TÁCTICO Y APAGADO */
+.nav-pills .nav-link.active {
+    color: #fff;
+    font-weight: bold;
+
+    /* Verde militar apagado, sin brillo */
+    background: linear-gradient(
+      to right,
+      rgba(77,93,82,0.30),
+      rgba(46,58,50,0.15)
+    );
+
+    border: 1px solid rgba(255,255,255,0.15);
+
+    /* Sombras sin glow */
+    box-shadow:
+      inset 0 0 6px rgba(0,0,0,0.35),
+      0 0 4px rgba(0,0,0,0.4);
+}
+
+.nav-pills .nav-link.active:hover {
+    transform: translateX(6px);
+}
+
+/* ======================== */
+/*   TITULO ACERO CROMADO   */
+/* ======================== */
+.logo {
+  font-weight: 900;
+  letter-spacing: 2px;
+  font-size: 2rem;
+
+  background:
+    /* Capa 1: textura rugosa (ajustada a tonos más claros para el cromo) */
+    repeating-linear-gradient(
+      45deg,
+      rgba(150, 150, 150, 0.4) 0px,
+      rgba(150, 150, 150, 0.4) 2px,
+      rgba(180, 180, 180, 0.4) 4px,
+      rgba(180, 180, 180, 0.4) 6px
+    ),
+    /* Capa 2: grano disperso (mantenido con ajustes menores) */
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0.1) 40%,
+      rgba(255, 255, 255, 0.3) 80%
+    ),
+    /* Capa 3: Acero Cromado Brillante */
+    linear-gradient(
+      135deg,
+      #ffffff 0%,   /* Blanco brillante para reflejos */
+      #cccccc 30%,   /* Gris claro */
+      #777777 60%,   /* Gris medio para profundidad */
+      #cccccc 85%,
+      #ffffff 100%
+    );
+
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  /* Relieve metálico ajustado a colores claros */
+  text-shadow:
+    0px 1px 1px rgba(255,255,255,0.7),
+    0px 2px 2px rgba(0,0,0,0.45); /* Sombra oscura para dar relieve */
+}
+
+/* ================================ */
+/*  BOTÓN CERRAR SESIÓN - BLACK OPS */
+/* ================================ */
+
+.btn-logout {
+    background: #000;
+    color: #ffb300;
+    border: 1px solid rgba(255, 179, 0, 0.3);
+    font-weight: 600;
+
+    box-shadow:
+      0 0 6px rgba(0,0,0,0.4),
+      inset 0 0 6px rgba(255, 179, 0, 0.15);
+
+    transition: all 0.25s ease;
+}
+
+.btn-logout:hover {
+    background: #111;
+    color: #ffcf57;
+    border-color: rgba(255, 179, 0, 0.5);
+    box-shadow:
+      0 0 12px rgba(255, 179, 0, 0.45),
+      inset 0 0 8px rgba(255, 179, 0, 0.3);
+
+    transform: translateY(-1px);
+}
+
+.btn-logout:active {
+    background: #000;
+    color: #ffb300;
+    box-shadow: inset 0 0 6px rgba(255, 179, 0, 0.35);
+}
+
+
+/* === MAIN (contenido) === */
+main.d-flex {
+  background: linear-gradient(180deg, $militar-oscuro, $militar-suave);
+  color: $militar-texto;
+  flex-direction: column;
+  flex-grow: 1;
+  backdrop-filter: blur(1px);
+}
+
+/* === NAVBAR (MISMA TONALIDAD QUE LA SIDEBAR) === */
+header.navbar {
+  background: linear-gradient(90deg, $militar-oscuro, $militar-suave);
+  border-bottom: 2px solid $militar-borde;
+
+  h1,
+  span {
+    color: $militar-texto;
+  }
+}
+
+/* === CONTENEDOR DEL contenido (router-outlet container) === */
+.p-4 {
+  background: rgba(255, 255, 255, 0.04);     // ligero brillo como panel táctico
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  backdrop-filter: blur(2px);
+}
+
+.dashboard-main {
+  overflow: hidden;
+}
+
+===== FILE: dashboard-layout.component.ts =====
+// src/app/layouts/dashboard-layout/dashboard-layout.component.ts
+import { Component, OnInit } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../../core/auth/services/auth.service';
+import { Usuario } from '../../core/models/usuario.model';
+
+@Component({
+  selector: 'app-dashboard-layout',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  templateUrl: './dashboard-layout.component.html',
+  styleUrls: ['./dashboard-layout.component.scss']
+})
+export class DashboardLayoutComponent implements OnInit {
+  // Rol del usuario logueado para usar en el template
+  userRole: Usuario['rol'] | null = null;
+  currentUser: Usuario | null = null;
+
+  constructor(private authService: AuthService) {}
+  
+  ngOnInit(): void {
+    // Intentar obtener el usuario actual (usando el token decodificado)
+    this.currentUser = this.authService.getCurrentUser();
+    this.userRole = this.currentUser ? this.currentUser.rol : null;
+  }
+
+  logout(): void {
+    this.authService.logout();
+  }
+}
+
+===== FILE: cancel-button.component.html =====
+<button 
+  type="button" 
+  class="btn btn-secondary" 
+  [ngClass]="customClass" 
+  (click)="onCancelClick()">
+  
+  {{ text }}
+</button>
+
+===== FILE: cancel-button.component.scss =====
+/* Estilos básicos para el botón secundario (siguiendo Bootstrap) */
+.btn-secondary {
+  // Colores base
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+
+  // Transición suave para el hover
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+    // Efecto sutil para el hover
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  }
+}
+
+===== FILE: cancel-button.component.ts =====
+import { Component, Input } from '@angular/core';
+import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-cancel-button',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './cancel-button.component.html', // Enlace al nuevo archivo HTML
+  styleUrls: ['./cancel-button.component.scss'] // Enlace al nuevo archivo SCSS
+})
+export class CancelButtonComponent {
+  // Texto personalizable del botón (por defecto 'Cancelar')
+  @Input() text: string = 'Cancelar';
+  
+  // Clase adicional que el componente padre quiera agregar
+  @Input() customClass: string = '';
+  
+  // Ruta a la que se debe navegar al cancelar (por defecto el dashboard)
+  @Input() navigateTo: string = '/dashboard';
+
+  constructor(private router: Router) { }
+
+  /**
+   * Navega a la ruta especificada en la propiedad 'navigateTo' al hacer clic.
+   */
+  onCancelClick(): void {
+    this.router.navigate([this.navigateTo]);
+  }
+}
+
+===== FILE: show-for-role.directive.ts =====
+// src/app/shared/directives/show-for-role.directive.ts
+
+import { Directive, Input, TemplateRef, ViewContainerRef, OnInit, OnDestroy } from '@angular/core';
+import { AuthService } from '../../core/auth/services/auth.service'; // Asumiendo tu AuthService
+import { Subscription } from 'rxjs';
+
+/**
+ * Directiva estructural que muestra un elemento solo si el usuario actual
+ * tiene al menos uno de los roles especificados.
+ * Uso: <button *appShowForRole="'administrador'">...</button>
+ * Uso con múltiples roles: <div *appShowForRole="['administrador', 'profesor']">...</div>
+ */
+@Directive({
+  selector: '[appShowForRole]',
+  standalone: true,
+})
+export class ShowForRoleDirective implements OnInit, OnDestroy {
+  // El rol o array de roles requerido para mostrar el elemento
+  @Input() appShowForRole: string | string[] = [];
+  
+  private subscription!: Subscription;
+
+  constructor(
+    private templateRef: TemplateRef<any>, // Referencia al contenido que queremos mostrar/ocultar
+    private viewContainer: ViewContainerRef, // Contenedor donde se insertará/removerá la vista
+    private authService: AuthService // Servicio de autenticación para obtener el rol del usuario
+  ) {}
+
+  ngOnInit(): void {
+    // Escucha el cambio de estado de autenticación (ej. cuando el usuario inicia sesión)
+    this.subscription = this.authService.user$.subscribe(user => {
+      this.updateView();
+    });
+
+    // Ejecuta la lógica inicial
+    this.updateView();
+  }
+
+  updateView(): void {
+    const requiredRoles = Array.isArray(this.appShowForRole)
+      ? this.appShowForRole.map(r => r.toLowerCase())
+      : [this.appShowForRole.toLowerCase()];
+
+    // Verifica si el usuario actual cumple con el rol
+    const hasPermission = this.authService.hasRole(requiredRoles); 
+    this.viewContainer.clear(); 
+    if (hasPermission) {
+      // Si tiene permiso, muestra el elemento (adjunta la vista al contenedor)
+      this.viewContainer.createEmbeddedView(this.templateRef);
+    } else {
+      // Si no tiene permiso, oculta el elemento (limpia el contenedor)
+      this.viewContainer.clear();
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+}
+
+===== FILE: role-display.pipe.ts =====
+// src/app/shared/pipes/role-display.pipe.ts
+
+import { Pipe, PipeTransform } from '@angular/core';
+
+/**
+ * Transforma el nombre de un rol a un formato amigable con ícono.
+ * Ejemplo: 'administrador' -> 'ADMINISTRADOR 👑'
+ * 'usuario'       -> 'USUARIO'
+ */
+@Pipe({
+  name: 'roleDisplay',
+  standalone: true // Se define como standalone, como el resto de tu proyecto.
+})
+export class RoleDisplayPipe implements PipeTransform {
+
+  // El método 'transform' recibe el valor (rol: string) y retorna el valor transformado (string).
+  transform(role: string | undefined): string {
+    if (!role) return '';
+
+    const lowerRole = role.toLowerCase();
+
+    switch (lowerRole) {
+      case 'administrador':
+        return 'ADMINISTRADOR 👑';
+      case 'usuario':
+        return 'USUARIO';
+      case 'profesor':
+        // Asumiendo otros roles que puedas tener
+        return 'PROFESOR 🧑‍🏫'; 
+      default:
+        // Capitaliza la primera letra si no se reconoce
+        return lowerRole.charAt(0).toUpperCase() + lowerRole.slice(1);
+    }
+  }
+
+}
+
