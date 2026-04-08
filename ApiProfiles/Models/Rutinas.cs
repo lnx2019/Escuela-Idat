@@ -17,5 +17,4 @@ public class Rutinas
 
     public virtual Socios Socio { get; set; } = null!;
     public virtual Entrenadores? Entrenador { get; set; }
-    public virtual ICollection<RutinaEjercicios> RutinaEjercicios { get; set; } = new List<RutinaEjercicios>();
 }

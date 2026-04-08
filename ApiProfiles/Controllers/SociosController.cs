@@ -69,6 +69,15 @@ public class SociosController : ControllerBase
 
         var socio = new Models.Socios { UserId = user.UserId, FechaNacimiento = request.FechaNacimiento, Genero = request.Genero, AlturaCm = request.AlturaCm, PesoKg = request.PesoKg, FechaRegistro = DateTime.Now, IsActive = true };
         _context.Socios.Add(socio);
+        
+        // Asignar rol SOCIO al usuario
+        var rolSocio = await _context.Roles.FirstOrDefaultAsync(r => r.NormalizedName == "SOCIO");
+        if (rolSocio != null)
+        {
+            var userRole = new ApiIdentity.Models.UserRoles { UserId = user.UserId, RoleId = rolSocio.RoleId, AssignedAt = DateTime.Now };
+            _context.UserRoles.Add(userRole);
+        }
+        
         await _context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetById), new { id = socio.SocioId }, new { socio.SocioId, user.UserName, user.Email });

@@ -41,7 +41,16 @@ public class MembresiasController : ControllerBase
         if (await _context.Membresias.AnyAsync(m => m.Nombre.ToUpper() == request.Nombre.ToUpper()))
             return BadRequest(new { message = "Ya existe" });
 
-        var m = new Models.Membresias { Nombre = request.Nombre, Descripcion = request.Descripcion, DuracionDias = request.DuracionDias, Precio = request.Precio, EsRenovable = request.EsRenovable, IsActive = true, CreatedAt = DateTime.Now };
+        var m = new Membresias 
+        { 
+            Nombre = request.Nombre, 
+            Descripcion = request.Descripcion, 
+            DuracionDias = request.DuracionDias, 
+            Precio = request.Precio, 
+            EsRenovable = request.EsRenovable, 
+            IsActive = true, 
+            CreatedAt = DateTime.Now 
+        };
         _context.Membresias.Add(m);
         await _context.SaveChangesAsync();
         return CreatedAtAction(nameof(GetById), new { id = m.MembresiaId }, new { m.MembresiaId, m.Nombre, m.Precio });
@@ -62,64 +71,6 @@ public class MembresiasController : ControllerBase
     }
 }
 
-[ApiController]
-[Route("api/[controller]")]
-[Authorize]
-public class SocioMembresiaController : ControllerBase
-{
-    private readonly GimnasioDbContext _context;
-
-    public SocioMembresiaController(GimnasioDbContext context) => _context = context;
-
-    [HttpGet("socio/{socioId}")]
-    [Authorize(Roles = "ADMIN,ENTRENADOR")]
-    public async Task<IActionResult> GetBySocio(int socioId)
-    {
-        var result = await _context.SocioMembresia.Include(sm => sm.Membresia)
-            .Where(sm => sm.SocioId == socioId)
-            .OrderByDescending(sm => sm.FechaInicio)
-            .Select(sm => new { sm.SocioMembresiaId, sm.SocioId, sm.MembresiaId, membresiaNombre = sm.Membresia.Nombre, sm.FechaInicio, sm.FechaFin, sm.Estado, sm.MontoPagado })
-            .ToListAsync();
-        return Ok(result);
-    }
-
-    [HttpGet("mi-membresia")]
-    [Authorize(Roles = "SOCIO")]
-    public async Task<IActionResult> GetMyMembership()
-    {
-        var userId = int.Parse(User.Claims.First(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier").Value);
-        return Ok(new List<object>());
-    }
-
-    [HttpPost]
-    [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> Create([FromBody] CreateSocioMembresiaRequest request)
-    {
-        var membresia = await _context.Membresias.FindAsync(request.MembresiaId);
-        if (membresia == null || !membresia.IsActive) return BadRequest(new { message = "Membresía inválida" });
-
-        var fechaFin = request.FechaInicio.AddDays(membresia.DuracionDias);
-        var estado = fechaFin >= DateTime.Now ? "ACTIVA" : "VENCIDA";
-
-        var sm = new Models.SocioMembresia { SocioId = request.SocioId, MembresiaId = request.MembresiaId, FechaInicio = request.FechaInicio, FechaFin = fechaFin, Estado = estado, MontoPagado = request.MontoPagado, Notas = request.Notas, CreatedAt = DateTime.Now };
-        _context.SocioMembresia.Add(sm);
-        await _context.SaveChangesAsync();
-        return Ok(new { sm.SocioMembresiaId, sm.Estado, sm.FechaFin });
-    }
-
-    [HttpPut("{id}")]
-    [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateSocioMembresiaRequest request)
-    {
-        var sm = await _context.SocioMembresia.FindAsync(id);
-        if (sm == null) return NotFound();
-        if (request.Estado != null) sm.Estado = request.Estado;
-        if (request.Notas != null) sm.Notas = request.Notas;
-        await _context.SaveChangesAsync();
-        return NoContent();
-    }
-}
-
 public class CreateMembresiaRequest
 {
     public string Nombre { get; set; } = string.Empty;
@@ -135,6 +86,71 @@ public class UpdateMembresiaRequest
     public string? Descripcion { get; set; }
     public int? DuracionDias { get; set; }
     public decimal? Precio { get; set; }
+}
+
+[ApiController]
+[Route("api/[controller]")]
+[Authorize]
+public class SocioMembresiaController : ControllerBase
+{
+    private readonly GimnasioDbContext _context;
+
+    public SocioMembresiaController(GimnasioDbContext context) => _context = context;
+
+    [HttpGet("socio/{socioId}")]
+    [Authorize(Roles = "ADMIN,ENTRENADOR")]
+    public async Task<IActionResult> GetBySocio(int socioId)
+    {
+        var result = await _context.SocioMembresia
+            .Where(sm => sm.SocioId == socioId)
+            .OrderByDescending(sm => sm.FechaInicio)
+            .Select(sm => new { sm.SocioMembresiaId, sm.SocioId, sm.MembresiaId, sm.FechaInicio, sm.FechaFin, sm.Estado, sm.MontoPagado })
+            .ToListAsync();
+        return Ok(result);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<IActionResult> Create([FromBody] CreateSocioMembresiaRequest request)
+    {
+        var membresia = await _context.Membresias.FindAsync(request.MembresiaId);
+        if (membresia == null || !membresia.IsActive) 
+            return BadRequest(new { message = "Membresía inválida" });
+
+        var fechaFin = request.FechaInicio.AddDays(membresia.DuracionDias);
+        var estado = fechaFin >= DateTime.Now ? "ACTIVA" : "VENCIDA";
+
+        var sm = new SocioMembresia 
+        { 
+            SocioId = request.SocioId, 
+            MembresiaId = request.MembresiaId, 
+            FechaInicio = request.FechaInicio, 
+            FechaFin = fechaFin, 
+            Estado = estado, 
+            MontoPagado = request.MontoPagado, 
+            Notas = request.Notas, 
+            CreatedAt = DateTime.Now 
+        };
+        
+        _context.SocioMembresia.Add(sm);
+        await _context.SaveChangesAsync();
+        
+        return Ok(new { sm.SocioMembresiaId, sm.Estado, sm.FechaFin });
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateSocioMembresiaRequest request)
+    {
+        var sm = await _context.SocioMembresia.FindAsync(id);
+        if (sm == null) return NotFound();
+        
+        if (request.Estado != null) sm.Estado = request.Estado;
+        if (request.Notas != null) sm.Notas = request.Notas;
+        
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
 }
 
 public class CreateSocioMembresiaRequest

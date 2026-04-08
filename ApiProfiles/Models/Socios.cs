@@ -20,6 +20,4 @@ public class Socios
     public virtual Users User { get; set; } = null!;
     public virtual ICollection<Asistencias> Asistencias { get; set; } = new List<Asistencias>();
     public virtual ICollection<Rutinas> Rutinas { get; set; } = new List<Rutinas>();
-    public virtual ICollection<SocioEntrenador> SocioEntrenador { get; set; } = new List<SocioEntrenador>();
-    public virtual ICollection<SocioMembresia> SocioMembresia { get; set; } = new List<SocioMembresia>();
 }

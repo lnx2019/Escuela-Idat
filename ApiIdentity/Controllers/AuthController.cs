@@ -81,6 +81,11 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = "El email ya existe" });
 
         var roleName = request.Role?.ToUpper() ?? "SOCIO";
+        
+        // Permitir SOCIO, ENTRENADOR o ADMIN (para crear primer usuario)
+        if (roleName != "SOCIO" && roleName != "ENTRENADOR" && roleName != "ADMIN")
+            return BadRequest(new { message = "Rol inválido. Solo se permite SOCIO, ENTRENADOR o ADMIN" });
+
         var role = await _context.Roles.FirstOrDefaultAsync(r => r.NormalizedName == roleName);
         if (role == null)
             return BadRequest(new { message = "Rol inválido" });

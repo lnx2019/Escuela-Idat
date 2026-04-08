@@ -16,13 +16,13 @@ using System.Reflection;
     "\\")]
 [assembly: System.Reflection.AssemblyMetadata("dcpbinpath", "C:\\Users\\LNX\\.nuget\\packages\\aspire.hosting.orchestration.win-x64\\8.2.2\\tools\\ext" +
     "\\bin\\")]
-[assembly: System.Reflection.AssemblyMetadata("apphostprojectpath", "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\GimnacioCore")]
+[assembly: System.Reflection.AssemblyMetadata("apphostprojectpath", "D:\\00-2026-Opencode\\GimnacioAPI\\src\\GimnacioCore")]
 [assembly: System.Reflection.AssemblyMetadata("aspiredashboardpath", "C:\\Users\\LNX\\.nuget\\packages\\aspire.dashboard.sdk.win-x64\\8.2.2\\tools\\Aspire.Dash" +
     "board.exe")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("GimnacioCore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4631e697ab2b9c51b32d794a7ab7653dddeb8796")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
 [assembly: System.Reflection.AssemblyProductAttribute("GimnacioCore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GimnacioCore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

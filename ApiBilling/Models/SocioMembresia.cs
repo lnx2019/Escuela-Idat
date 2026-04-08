@@ -13,6 +13,4 @@ public class SocioMembresia
     public decimal MontoPagado { get; set; }
     public string? Notas { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-    public virtual Membresias Membresia { get; set; } = null!;
 }

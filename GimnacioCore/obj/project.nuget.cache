@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "9O/X2Js3ZPg=",
+  "dgSpecHash": "kO0BReAGdC0=",
   "success": true,
-  "projectFilePath": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\GimnacioCore\\GimnacioCore.csproj",
+  "projectFilePath": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\GimnacioCore\\GimnacioCore.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\LNX\\.nuget\\packages\\aspire.dashboard.sdk.win-x64\\8.2.2\\aspire.dashboard.sdk.win-x64.8.2.2.nupkg.sha512",
     "C:\\Users\\LNX\\.nuget\\packages\\aspire.hosting\\8.2.2\\aspire.hosting.8.2.2.nupkg.sha512",

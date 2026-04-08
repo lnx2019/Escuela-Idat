@@ -8,5 +8,5 @@ namespace Projects;
 public class GimnacioCore
 {
     private GimnacioCore() { }
-    public static string ProjectPath => """C:\Git\CICLO 5\BLOQUE 2\Examen Final 5to ciclo\GimnacioCore""";
+    public static string ProjectPath => """D:\00-2026-Opencode\GimnacioAPI\src\GimnacioCore""";
 }

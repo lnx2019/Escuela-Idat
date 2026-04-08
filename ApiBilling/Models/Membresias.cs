@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace ApiBilling.Models;
 
@@ -13,6 +12,4 @@ public class Membresias
     public bool EsRenovable { get; set; } = true;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-    public virtual ICollection<SocioMembresia> SocioMembresia { get; set; } = new List<SocioMembresia>();
 }

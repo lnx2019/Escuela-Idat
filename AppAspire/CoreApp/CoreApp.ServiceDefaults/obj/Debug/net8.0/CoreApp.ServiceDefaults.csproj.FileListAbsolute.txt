@@ -1,0 +1,12 @@
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\bin\Debug\net8.0\CoreApp.ServiceDefaults.deps.json
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\bin\Debug\net8.0\CoreApp.ServiceDefaults.dll
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\bin\Debug\net8.0\CoreApp.ServiceDefaults.pdb
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\obj\Debug\net8.0\CoreApp.ServiceDefaults.csproj.AssemblyReference.cache
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\obj\Debug\net8.0\CoreApp.ServiceDefaults.GeneratedMSBuildEditorConfig.editorconfig
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\obj\Debug\net8.0\CoreApp.ServiceDefaults.AssemblyInfoInputs.cache
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\obj\Debug\net8.0\CoreApp.ServiceDefaults.AssemblyInfo.cs
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\obj\Debug\net8.0\CoreApp.ServiceDefaults.csproj.CoreCompileInputs.cache
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\obj\Debug\net8.0\CoreApp.ServiceDefaults.dll
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\obj\Debug\net8.0\refint\CoreApp.ServiceDefaults.dll
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\obj\Debug\net8.0\CoreApp.ServiceDefaults.pdb
+C:\Francisco Velarde\00-IDAT - cursos 2024\CICLO 5\Desarrollo de Servicios Web\PRACTICAS\BLOQUE 2\CoreApp\CoreApp.ServiceDefaults\obj\Debug\net8.0\ref\CoreApp.ServiceDefaults.dll

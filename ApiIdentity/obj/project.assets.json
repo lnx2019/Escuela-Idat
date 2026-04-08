@@ -2916,11 +2916,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiIdentity\\ApiIdentity.csproj",
+      "projectUniqueName": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiIdentity\\ApiIdentity.csproj",
       "projectName": "ApiIdentity",
-      "projectPath": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiIdentity\\ApiIdentity.csproj",
+      "projectPath": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiIdentity\\ApiIdentity.csproj",
       "packagesPath": "C:\\Users\\LNX\\.nuget\\packages\\",
-      "outputPath": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiIdentity\\obj\\",
+      "outputPath": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiIdentity\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\LNX\\AppData\\Roaming\\NuGet\\NuGet.Config"

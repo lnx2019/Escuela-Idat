@@ -3,7 +3,7 @@
 API RESTful para gestión de gimnasio con 4 microservicios orquestados con .NET Aspire.
 
 ## Requisitos
-- ** dotnet --version - 8 o superior
+- ** dotnet --version - 8 o superior``
 - ** dotnet workload install aspire
 - **.NET 8.0 SDK** - [Descargar](https://dotnet.microsoft.com/download/dotnet/8.0)
 - ** SQL Server** (LocalDB, Express o Standard)
@@ -67,8 +67,9 @@ src/
 git clone -b EFINAL https://github.com/lnx2019/Escuela-Idat.git .
 
 # Restaurar todas las dependencias
-cd GimnacioCore
-dotnet restore
+dotnet workload restore
+#cd GimnacioCore
+#dotnet restore
 ```
 ## Ejecución con Aspire (Recomendado)
 ```bash

@@ -16,8 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ApiIdentity\ApiIdentity.csproj" />
-    <ProjectReference Include="..\ApiBilling\ApiBilling.csproj" />
-    <ProjectReference Include="..\ApiWorkouts\ApiWorkouts.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,37 +1,15 @@
 {
   "Version": 1,
-  "Hash": "dC7VxDkYh1E9bqWEsw4FiQPqv38+vv5fwrM6Ti6d+m4=",
+  "Hash": "JuMoqijU2+Yr+c28rBdBp/Yn7eKvSGGN1Fc/SxScbZQ=",
   "Source": "ApiProfiles",
   "BasePath": "_content/ApiProfiles",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [
     {
-      "Identity": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiBilling\\ApiBilling.csproj",
-      "Version": 2,
-      "Source": "ApiBilling",
-      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
-      "AdditionalPublishProperties": "",
-      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework",
-      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
-      "AdditionalBuildProperties": "",
-      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework"
-    },
-    {
-      "Identity": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiIdentity\\ApiIdentity.csproj",
+      "Identity": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiIdentity\\ApiIdentity.csproj",
       "Version": 2,
       "Source": "ApiIdentity",
-      "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
-      "AdditionalPublishProperties": "",
-      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework",
-      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
-      "AdditionalBuildProperties": "",
-      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework"
-    },
-    {
-      "Identity": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiWorkouts\\ApiWorkouts.csproj",
-      "Version": 2,
-      "Source": "ApiWorkouts",
       "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",
       "AdditionalPublishProperties": "",
       "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework",

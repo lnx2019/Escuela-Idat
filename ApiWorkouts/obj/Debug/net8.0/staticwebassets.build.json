@@ -1,13 +1,13 @@
 {
   "Version": 1,
-  "Hash": "RYuljR9193pO+4G57dvD3Bt+l9qnbu5E8C+QNuJZd7w=",
+  "Hash": "9+pLs76j5FrgZYi2IhEYL/4bMx+hUM46CdiukloGze0=",
   "Source": "ApiWorkouts",
   "BasePath": "_content/ApiWorkouts",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [
     {
-      "Identity": "C:\\Git\\CICLO 5\\BLOQUE 2\\Examen Final 5to ciclo\\ApiIdentity\\ApiIdentity.csproj",
+      "Identity": "D:\\00-2026-Opencode\\GimnacioAPI\\src\\ApiIdentity\\ApiIdentity.csproj",
       "Version": 2,
       "Source": "ApiIdentity",
       "GetPublishAssetsTargets": "ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems",

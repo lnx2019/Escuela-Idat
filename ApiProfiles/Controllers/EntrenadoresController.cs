@@ -40,15 +40,7 @@ public class EntrenadoresController : ControllerBase
     [Authorize(Roles = "ENTRENADOR")]
     public async Task<IActionResult> GetMySocios()
     {
-        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var entr = await _context.Entrenadores.FirstOrDefaultAsync(e => e.UserId == userId);
-        if (entr == null) return NotFound();
-
-        var socioIds = await _context.SocioEntrenador.Where(se => se.EntrenadorId == entr.EntrenadorId && se.Activo).Select(se => se.SocioId).ToListAsync();
-        var socios = await _context.Socios.Include(s => s.User).Where(s => socioIds.Contains(s.SocioId) && s.IsActive)
-            .Select(s => new { s.SocioId, userName = s.User.UserName, email = s.User.Email, s.FechaNacimiento })
-            .ToListAsync();
-        return Ok(socios);
+        return Ok(new { message = "Funcionalidad en desarrollo" });
     }
 
     [HttpPost]
@@ -74,6 +66,15 @@ public class EntrenadoresController : ControllerBase
 
         var entr = new Models.Entrenadores { UserId = user.UserId, Especialidad = request.Especialidad, Certificaciones = request.Certificaciones, FechaIngreso = DateTime.Now, IsActive = true };
         _context.Entrenadores.Add(entr);
+
+        // Asignar rol ENTRENADOR al usuario
+        var rolEntrenador = await _context.Roles.FirstOrDefaultAsync(r => r.NormalizedName == "ENTRENADOR");
+        if (rolEntrenador != null)
+        {
+            var userRole = new ApiIdentity.Models.UserRoles { UserId = user.UserId, RoleId = rolEntrenador.RoleId, AssignedAt = DateTime.Now };
+            _context.UserRoles.Add(userRole);
+        }
+
         await _context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetById), new { id = entr.EntrenadorId }, new { entr.EntrenadorId, user.UserName, user.Email });

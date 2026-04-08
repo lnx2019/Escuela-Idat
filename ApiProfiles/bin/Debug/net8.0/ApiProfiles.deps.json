@@ -8,9 +8,7 @@
     ".NETCoreApp,Version=v8.0": {
       "ApiProfiles/1.0.0": {
         "dependencies": {
-          "ApiBilling": "1.0.0",
           "ApiIdentity": "1.0.0",
-          "ApiWorkouts": "1.0.0",
           "BCrypt.Net-Next": "4.0.3",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.0",
           "Microsoft.AspNetCore.OpenApi": "8.0.25",
@@ -559,21 +557,6 @@
           }
         }
       },
-      "ApiBilling/1.0.0": {
-        "dependencies": {
-          "ApiIdentity": "1.0.0",
-          "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.0",
-          "Microsoft.AspNetCore.OpenApi": "8.0.25",
-          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.0",
-          "Swashbuckle.AspNetCore": "6.6.2"
-        },
-        "runtime": {
-          "ApiBilling.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
       "ApiIdentity/1.0.0": {
         "dependencies": {
           "BCrypt.Net-Next": "4.0.3",
@@ -584,21 +567,6 @@
         },
         "runtime": {
           "ApiIdentity.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "ApiWorkouts/1.0.0": {
-        "dependencies": {
-          "ApiIdentity": "1.0.0",
-          "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.0",
-          "Microsoft.AspNetCore.OpenApi": "8.0.25",
-          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.0",
-          "Swashbuckle.AspNetCore": "6.6.2"
-        },
-        "runtime": {
-          "ApiWorkouts.dll": {
             "assemblyVersion": "1.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -1018,17 +986,7 @@
       "path": "system.windows.extensions/6.0.0",
       "hashPath": "system.windows.extensions.6.0.0.nupkg.sha512"
     },
-    "ApiBilling/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
     "ApiIdentity/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "ApiWorkouts/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
