@@ -52,7 +52,7 @@ API RESTful para gestión de gimnasio con 4 microservicios orquestados con .NET 
 
 ```
 src/
-├── GimnacioCore/     # Orquestador Aspire (puerto 15085)
+├── GimnacioCore/     # Orquestador Aspire (puerto 17269)
 ├── ApiIdentity/      # Autenticación y Usuarios
 ├── ApiProfiles/      # Socios, Entrenadores, Asistencias
 ├── ApiBilling/       # Membresías y Pagos
@@ -61,19 +61,12 @@ src/
 ## Instalación de Paquetes
 
 ```bash
-``abrir directorio para desplegar el proyecto
-``no inicializar con git init
-``ejecutar tal cual el comando con el punto al final
-git clone -b EFINAL https://github.com/lnx2019/Escuela-Idat.git .
-
 # Restaurar todas las dependencias
-cd GimnacioCore
-dotnet workload restore
-#dotnet restore
-```
+git clone https://github.com/lnx2019/Escuela-Idat.git
+cd Escuela-Idat
+dotnet workload restore GimnacioCore\GimnacioCore.csproj
+
 ## Ejecución con Aspire (Recomendado)
-```bash
-cd.. 'retornar al directorio raiz'
 dotnet run --project GimnacioCore
 
 ```Esto inicia:
@@ -87,8 +80,8 @@ dotnet run --project GimnacioCore
 `en el dashboard puedes encontrar los puertos asignados a cada servicio para las pruebas en postman`
 `si el dashboard demora en e inicializar puede ser por los certificadod`
 
-```si hay demoras en la ejecucion o carga del dashboard forzar validacion de certificados net
-en powershell ejecutar```
+# Nota si hay demoras en la ejecucion o carga del dashboard forzar validacion de certificados net
+# en powershell ejecutar el siguiete comando
 dotnet dev-certs https --trust
 
 ## Puertos y Endpoints
@@ -140,9 +133,9 @@ dotnet dev-certs https --trust
 ```json
 POST /api/auth/register
 {
-  "userName": "admin",
-  "email": "admin@gimnasio.com",
-  "password": "Admin123!",
+  "userName": "manager",
+  "email": "manager@gimnasio.com",
+  "password": "Manager123!",
   "role": "ADMIN"
 }
 ```
@@ -151,8 +144,8 @@ POST /api/auth/register
 ```json
 POST /api/auth/login
 {
-  "userName": "admin",
-  "password": "Admin123!"
+  "userName": "manager",
+  "password": "Manager123!"
 }
 ```
 
