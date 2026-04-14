@@ -84,8 +84,32 @@ public class EntrenadoresController : ControllerBase
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateEntrenadorRequest request)
     {
-        var entr = await _context.Entrenadores.FindAsync(id);
+        var entr = await _context.Entrenadores.Include(e => e.User).FirstOrDefaultAsync(e => e.EntrenadorId == id);
         if (entr == null) return NotFound();
+
+        if (entr.User == null) return NotFound(new { message = "Usuario asociado no encontrado" });
+
+        if (!string.IsNullOrEmpty(request.UserName))
+        {
+            if (await _context.Users.AnyAsync(u => u.NormalizedUserName == request.UserName.ToUpper() && u.UserId != entr.UserId))
+                return BadRequest(new { message = "El nombre de usuario ya está en uso" });
+            entr.User.UserName = request.UserName;
+            entr.User.NormalizedUserName = request.UserName.ToUpper();
+        }
+
+        if (!string.IsNullOrEmpty(request.Email))
+        {
+            if (await _context.Users.AnyAsync(u => u.NormalizedEmail == request.Email.ToUpper() && u.UserId != entr.UserId))
+                return BadRequest(new { message = "El correo electrónico ya está en uso" });
+            entr.User.Email = request.Email;
+            entr.User.NormalizedEmail = request.Email.ToUpper();
+        }
+
+        if (!string.IsNullOrEmpty(request.PhoneNumber))
+            entr.User.PhoneNumber = request.PhoneNumber;
+
+        if (!string.IsNullOrEmpty(request.Password))
+            entr.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
         if (request.Especialidad != null) entr.Especialidad = request.Especialidad;
         if (request.Certificaciones != null) entr.Certificaciones = request.Certificaciones;
@@ -107,6 +131,10 @@ public class CreateEntrenadorRequest
 
 public class UpdateEntrenadorRequest
 {
+    public string? UserName { get; set; }
+    public string? Email { get; set; }
+    public string? Password { get; set; }
+    public string? PhoneNumber { get; set; }
     public string? Especialidad { get; set; }
     public string? Certificaciones { get; set; }
 }

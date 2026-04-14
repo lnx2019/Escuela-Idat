@@ -235,7 +235,7 @@ Header: Authorization: Bearer <token_ADMIN>
 
 ### 26. Mi Membresía (SOCIO)
 ```json
-GET http://localhost:5003/api/sociomembresia/mi-membresia
+GET http://localhost:5003/api/sociomembresia/id
 Header: Authorization: Bearer <token_SOCIO>
 ```
 
@@ -330,7 +330,7 @@ Header: Authorization: Bearer <token_ADMIN>
 
 ### 35. Mi Rutina (SOCIO)
 ```json
-GET http://localhost:5004/api/rutinas/mi-rutina
+GET http://localhost:5004/api/rutinas/id
 Header: Authorization: Bearer <token_SOCIO>
 ```
 
